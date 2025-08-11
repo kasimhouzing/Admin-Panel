@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,131 +8,45 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit, Ban, Trash2, Phone, Mail, Clock } from "lucide-react";
+import { Plus, Edit, Ban, Trash2, Phone, Mail, Clock, Eye, Calendar, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+//import { Badge } from "@/components/ui/badge";
+//import Image from 'next/image';
+
+// Assuming these functions are correctly implemented elsewhere
+import { fetchlabormanagementdata, addlabormanagement, updatelabormanagement, suspendLabormanagement, getLabourerDetails, deleteLabourer } from "../../../api";
 
 export default function LoginManagement() {
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
-  // Initial user data, updated to reflect potential new fields for demonstration
-  const [users, setUsers] = useState([
-    {
-      id: "1",
-      nameOfInductee: "Raj Kumar",
-      dateOfBirth: "1980-05-20",
-      age: 44,
-      gender: "Male",
-      designation: "Camp Boss",
-      bloodGroup: "O+",
-      photoUpload: "raj_photo.jpg", // Placeholder for file name
-      selfDeclarationUpload: "raj_self_dec.pdf", // Placeholder for file name
-      medicalCertificateUpload: "raj_medical.pdf", // Placeholder for file name
-      additionalDocument1Upload: "", // Placeholder for file name
-      additionalDocument2Upload: "", // Placeholder for file name
-      reportedToIncharge: "N/A",
-      appointmentLetterUpload: "raj_appointment.pdf", // Placeholder for file name
-      vendor: "Lodha Group",
-      adharFrontUpload: "raj_adhar_front.jpg", // Placeholder for file name
-      adharNumber: "1234 5678 9012",
-      mobileNumber: "+91 9876543210",
-      email: "raj.kumar@lodha.com",
-      lastLogin: "2024-01-15 09:30 AM",
-      status: "active"
-    },
-    {
-      id: "2",
-      nameOfInductee: "Suresh Patil",
-      dateOfBirth: "1985-11-10",
-      age: 39,
-      gender: "Male",
-      designation: "Site Supervisor",
-      bloodGroup: "A+",
-      photoUpload: "suresh_photo.jpg",
-      selfDeclarationUpload: "suresh_self_dec.pdf",
-      medicalCertificateUpload: "suresh_medical.pdf",
-      additionalDocument1Upload: "",
-      additionalDocument2Upload: "",
-      reportedToIncharge: "Raj Kumar (Camp Boss)", // Updated to match dynamic option format
-      appointmentLetterUpload: "suresh_appointment.pdf",
-      vendor: "Shapoorji Pallonji",
-      adharFrontUpload: "suresh_adhar_front.jpg",
-      adharNumber: "2345 6789 0123",
-      mobileNumber: "+91 9876543211",
-      email: "suresh.patil@lodha.com",
-      lastLogin: "2024-01-14 06:45 PM",
-      status: "active"
-    },
-    {
-      id: "3",
-      nameOfInductee: "Mohammed Khan",
-      dateOfBirth: "1990-03-25",
-      age: 34,
-      gender: "Male",
-      designation: "Foreman",
-      bloodGroup: "B-",
-      photoUpload: "mohammed_photo.jpg",
-      selfDeclarationUpload: "mohammed_self_dec.pdf",
-      medicalCertificateUpload: "mohammed_medical.pdf",
-      additionalDocument1Upload: "",
-      additionalDocument2Upload: "",
-      reportedToIncharge: "Suresh Patil (Site Supervisor)", // Updated to match dynamic option format
-      appointmentLetterUpload: "mohammed_appointment.pdf",
-      vendor: "L&T Construction",
-      adharFrontUpload: "mohammed_adhar_front.jpg",
-      adharNumber: "3456 7890 1234",
-      mobileNumber: "+91 9876543212",
-      email: "mohammed.khan@lodha.com",
-      lastLogin: "2024-01-10 02:15 PM",
-      status: "suspended"
-    },
-    {
-      id: "4",
-      nameOfInductee: "Priya Sharma",
-      dateOfBirth: "1995-07-12",
-      age: 29,
-      gender: "Female",
-      designation: "Labourer",
-      bloodGroup: "AB+",
-      photoUpload: "priya_photo.jpg",
-      selfDeclarationUpload: "priya_self_dec.pdf",
-      medicalCertificateUpload: "priya_medical.pdf",
-      additionalDocument1Upload: "priya_skill_cert.pdf",
-      additionalDocument2Upload: "",
-      reportedToIncharge: "Mohammed Khan (Foreman)", // Updated to match dynamic option format
-      appointmentLetterUpload: "priya_appointment.pdf",
-      vendor: "Tata Projects",
-      adharFrontUpload: "priya_adhar_front.jpg",
-      adharNumber: "4567 8901 2345",
-      mobileNumber: "+91 9876543213",
-      email: "priya.sharma@example.com",
-      lastLogin: "Never",
-      status: "active"
-    }
-  ]);
-
+  const [labourer, setLabourer] = useState(null);
+  const [users, setUsers] = useState([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [viewingUser, setViewingUser] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     nameOfInductee: "",
     dateOfBirth: "",
     age: "",
     gender: "",
-    designation: "",
     bloodGroup: "",
+    mobileNumber: "",
+    email: "",
+    adharNumber: "",
+    designation: "",
+    vendor: "",
+    reportedToIncharge: "",
     photoUpload: "",
     selfDeclarationUpload: "",
     medicalCertificateUpload: "",
+    appointmentLetterUpload: "",
+    adharFrontUpload: "",
     additionalDocument1Upload: "",
     additionalDocument2Upload: "",
-    reportedToIncharge: "",
-    appointmentLetterUpload: "",
-    vendor: "",
-    adharFrontUpload: "",
-    adharNumber: "",
-    mobileNumber: "",
-    email: ""
   });
 
-  // Static data for dropdowns
   const designations = [
     "Camp Boss",
     "Site Supervisor",
@@ -145,136 +59,264 @@ export default function LoginManagement() {
     "Carpenter",
     "Mason"
   ];
-
   const genders = ["Male", "Female", "Other"];
   const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   const vendors = ["Lodha Group", "Shapoorji Pallonji", "L&T Construction", "Tata Projects", "Other"];
 
-  // Dynamically generate incharge options from existing users
-  const inchargeOptions = users.map(user => `${user.nameOfInductee} (${user.designation})`);
-  // Add a "N/A" option for top-level personnel
-  if (!inchargeOptions.includes("N/A")) {
-    inchargeOptions.unshift("N/A");
-  }
+  const filteredUsers = users.filter((user) =>
+    user.nameOfInductee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.mobileNumber.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  // Helper function to handle file input changes
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const fetchlabormanagement = async () => {
+    setLoading(true); // Set loading to true before fetching
+    try {
+      const data = await fetchlabormanagementdata();
+      const mapped = data.map((user) => ({
+        id: user.lab_id,
+        //lab_id: user.lab_id,
+        nameOfInductee: user.lab_name,
+        dateOfBirth: user.date_of_birth,
+        email: user.email_id,
+        mobileNumber: user.mobile_number,
+        age: user.age,
+        gender: user.gender,
+        designation: user.designation_trade,
+        bloodGroup: user.blood_group,
+        status: user.status || "active",
+      }));
+      setUsers(mapped);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Failed to load labour management data.");
+      setLoading(false);
+      toast({
+        title: "Fetch Error",
+        description: "Failed to load labour management data.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // This useEffect fetches all labourers on initial load.
+  useEffect(() => {
+    fetchlabormanagement();
+  }, []);
+
+  // This useEffect fetches detailed user info when a user is selected for viewing.
+  useEffect(() => {
+    const fetchLabourerDetails = async () => {
+      if (viewingUser && viewingUser.lab_id) { // Check if both viewingUser and lab_id exist
+        setLoading(true);
+        setError(null);
+        try {
+          const details = await getLabourerDetails(viewingUser.lab_id); // Pass lab_id
+          setLabourer(details);
+        } catch (err) {
+          // ... error handling
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchLabourerDetails();
+  }, [viewingUser]);
+
+  const handleOpenChange = (isOpen) => {
+    console.log("Viewing user clicked:", user);
+    setViewingUser({ lab_id: user.lab_id });
+  };
+
+
+  const inchargeOptions = ["N/A", ...users.map(user => `${user.nameOfInductee} (${user.designation})`)];
+
   const handleFileChange = (e, fieldName) => {
     const file = e.target.files[0];
     if (file) {
-      // In a real application, you would upload the file to a server
-      // and store the returned URL or file ID.
-      // For this example, we'll just store the file name.
       setFormData({ ...formData, [fieldName]: file.name });
     } else {
       setFormData({ ...formData, [fieldName]: "" });
     }
   };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (editingUser) {
-      // Update existing user
+    const newLabourerData = {
+      lab_Name: formData.nameOfInductee,
+      Date_Of_Birth: formData.dateOfBirth,
+      Age: parseInt(formData.age),
+      Gender: formData.gender,
+      Blood_Group: formData.bloodGroup,
+      Mobile_Number: formData.mobileNumber,
+      Email_ID: formData.email,
+      Aadhar_Number: formData.adharNumber,
+      Designation_Trade: formData.designation,
+      Select_Vendor: formData.vendor,
+      Reported_to_Incharge: formData.reportedToIncharge,
+      Photo_Upload: formData.photoUpload,
+      Self_Declaration_Upload: formData.selfDeclarationUpload,
+      Medical_Certificate: formData.medicalCertificateUpload,
+      Appointment_Letter_Upload: formData.appointmentLetterUpload,
+      Aadhar_Front_Upload: formData.adharFrontUpload,
+      Additional_Document_1: formData.additionalDocument1Upload,
+      Additional_Document_2: formData.additionalDocument2Upload,
+    };
+
+    try {
+      if (editingUser) {
+        await updatelabormanagement(editingUser.id, newLabourerData);
+        setUsers(users.map(user =>
+          user.id === editingUser.id
+            ? { ...user, ...formData }
+            : user
+        ));
+        toast({
+          title: "User Updated",
+          description: "User details have been successfully updated.",
+        });
+        setEditingUser(null);
+      } else {
+        const newLabourer = await addlabormanagement(newLabourerData);
+        setUsers([...users, { ...newLabourer, status: "active" }]);
+        toast({
+          title: "User Added",
+          description: "New user has been successfully added to the system.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to add or update user:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save user data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      resetFormData();
+      setIsAddDialogOpen(false);
+    }
+  };
+
+  const handleViewUser = async (labId) => {
+    setLabourer(null);
+    setError(null);
+    setLoading(true);
+
+    try {
+      const details = await getLabourerDetails(labId);
+      setLabourer(details);
+      setViewingUser(details); // Open the dialog by setting the viewing user
+    } catch (err) {
+      console.error('Failed to fetch labourer details:', err);
+      setError(err.response?.data?.error || 'Failed to fetch details.');
+      setViewingUser(null); // Close dialog on error
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleEdit = (user) => {
+    if (!user || typeof user !== 'object') {
+      console.error("Invalid user object passed to handleEdit.");
+      return;
+    }
+    setEditingUser(user);
+    setFormData({
+      nameOfInductee: user.nameOfInductee || '',
+      dateOfBirth: user.dateOfBirth || '',
+      age: user.age || '',
+      gender: user.gender || '',
+      designation: user.designation || '',
+      bloodGroup: user.bloodGroup || '',
+      photoUpload: user.photoUpload || '',
+      selfDeclarationUpload: user.selfDeclarationUpload || '',
+      medicalCertificateUpload: user.medicalCertificateUpload || '',
+      additionalDocument1Upload: user.additionalDocument1Upload || '',
+      additionalDocument2Upload: user.additionalDocument2Upload || '',
+      reportedToIncharge: user.reportedToIncharge || '',
+      appointmentLetterUpload: user.appointmentLetterUpload || '',
+      vendor: user.vendor || '',
+      adharFrontUpload: user.adharFrontUpload || '',
+      adharNumber: user.adharNumber || '',
+      mobileNumber: user.mobileNumber || '',
+      email: user.email || ''
+    });
+    setIsAddDialogOpen(true);
+  };
+
+  const handleSuspend = async (userId) => {
+    const userToUpdate = users.find(user => user.id === userId);
+
+    if (!userToUpdate) return;
+
+    const newStatus = userToUpdate.status === "active" ? "suspended" : "active";
+
+    try {
+      // Pass 'userId' to the API function
+      await suspendLabormanagement(userId, newStatus);
+
       setUsers(users.map(user =>
-        user.id === editingUser.id
-          ? { ...user, ...formData, age: parseInt(formData.age) }
+        user.id === userId
+          ? { ...user, status: newStatus }
           : user
       ));
+
       toast({
-        title: "User Updated",
-        description: "User details have been successfully updated.",
+        title: "User Status Changed",
+        description: `User access has been set to ${newStatus}.`,
       });
-      setEditingUser(null);
-    } else {
-      // Add new user/labourer
-      const newUser = {
-        id: (users.length + 1).toString(), // Simple ID generation
-        ...formData,
-        age: parseInt(formData.age), // Ensure age is a number
-        lastLogin: "Never", // New users haven't logged in yet
-        status: "active" // Default status for new users
-      };
-      setUsers([...users, newUser]);
+    } catch (error) {
+      console.error("Failed to update user status:", error);
       toast({
-        title: "User Added",
-        description: "New user has been successfully added to the system.",
+        title: "Error",
+        description: "Failed to update user status. Please try again.",
+        variant: "destructive",
       });
     }
+  };
 
-    // Reset form and close dialog
+  const resetFormData = () => {
     setFormData({
       nameOfInductee: "",
       dateOfBirth: "",
       age: "",
       gender: "",
-      designation: "",
       bloodGroup: "",
+      mobileNumber: "",
+      email: "",
+      adharNumber: "",
+      designation: "",
+      vendor: "",
+      reportedToIncharge: "",
       photoUpload: "",
       selfDeclarationUpload: "",
       medicalCertificateUpload: "",
+      appointmentLetterUpload: "",
+      adharFrontUpload: "",
       additionalDocument1Upload: "",
       additionalDocument2Upload: "",
-      reportedToIncharge: "",
-      appointmentLetterUpload: "",
-      vendor: "",
-      adharFrontUpload: "",
-      adharNumber: "",
-      mobileNumber: "",
-      email: ""
-    });
-    setIsAddDialogOpen(false);
-  };
-
-  const handleEdit = (user) => {
-    setEditingUser(user);
-    setFormData({
-      nameOfInductee: user.nameOfInductee,
-      dateOfBirth: user.dateOfBirth,
-      age: user.age,
-      gender: user.gender,
-      designation: user.designation,
-      bloodGroup: user.bloodGroup,
-      // For file inputs, we can't pre-fill the file itself for security reasons.
-      // We'll just show the existing file name as a placeholder.
-      photoUpload: user.photoUpload,
-      selfDeclarationUpload: user.selfDeclarationUpload,
-      medicalCertificateUpload: user.medicalCertificateUpload,
-      additionalDocument1Upload: user.additionalDocument1Upload,
-      additionalDocument2Upload: user.additionalDocument2Upload,
-      reportedToIncharge: user.reportedToIncharge,
-      appointmentLetterUpload: user.appointmentLetterUpload,
-      vendor: user.vendor,
-      adharFrontUpload: user.adharFrontUpload,
-      adharNumber: user.adharNumber,
-      mobileNumber: user.mobileNumber,
-      email: user.email
-    });
-    setIsAddDialogOpen(true);
-  };
-
-  const handleSuspend = (userId) => {
-    setUsers(users.map(user =>
-      user.id === userId
-        ? { ...user, status: user.status === "active" ? "suspended" : "active" }
-        : user
-    ));
-    toast({
-      title: "User Status Changed",
-      description: "User access has been updated.",
     });
   };
 
-  const handleDelete = (userId) => {
-    setUsers(users.filter(user => user.id !== userId));
-    toast({
-      title: "User Deleted",
-      description: "User has been permanently removed from the system.",
-      variant: "destructive"
-    });
-  };
+
+const handleDelete = async (labId) => {
+  if (window.confirm('Are you sure you want to delete this labourer?')) {
+    const result = await deleteLabourer(labId);
+    if (result.success) {
+      alert(result.message);
+      // You'll need to refresh your data here, for example:
+      // fetchLaborers(); 
+    } else {
+      alert(result.message);
+    }
+  }
+};
 
   return (
-    // Main container for the page content, now with a wider max-width and centered
     <div className="space-y-6 p-6 bg-background text-foreground min-h-screen max-w-screen-xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -315,7 +357,6 @@ export default function LoginManagement() {
               Add New User / Labourer
             </Button>
           </DialogTrigger>
-          {/* Dialog content, now even wider */}
           <DialogContent className="sm:max-w-screen-lg p-6 rounded-lg shadow-xl overflow-y-auto max-h-[80vh]">
             <DialogHeader>
               <DialogTitle className="text-2xl font-semibold text-primary">{editingUser ? "Edit User Details" : "Add New User / Labourer"}</DialogTitle>
@@ -323,9 +364,7 @@ export default function LoginManagement() {
                 {editingUser ? "Update the details for the selected user." : "Enter the comprehensive details for the new user or labourer."}
               </DialogDescription>
             </DialogHeader>
-            {/* Form layout remains two columns on medium and larger screens */}
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-              {/* Personal Details Section */}
               <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/10 p-3 rounded-md shadow-sm">Personal Details</div>
               <div className="space-y-2">
                 <Label htmlFor="nameOfInductee">Name of Inductee</Label>
@@ -394,7 +433,6 @@ export default function LoginManagement() {
                 </Select>
               </div>
 
-              {/* Contact Details Section */}
               <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/10 p-3 rounded-md shadow-sm mt-6">Contact Details</div>
               <div className="space-y-2">
                 <Label htmlFor="mobileNumber">Mobile Number</Label>
@@ -430,11 +468,8 @@ export default function LoginManagement() {
                   className="rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 />
               </div>
-              {/* Added empty div to push next section to new row if needed */}
               <div className="hidden md:block"></div>
 
-
-              {/* Work Details Section */}
               <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/10 p-3 rounded-md shadow-sm mt-6">Work Details</div>
               <div className="space-y-2">
                 <Label htmlFor="designation">Designation/Trade</Label>
@@ -481,10 +516,8 @@ export default function LoginManagement() {
                   </SelectContent>
                 </Select>
               </div>
-              {/* Added empty div to push next section to new row if needed */}
               <div className="hidden md:block"></div>
 
-              {/* Document Uploads Section */}
               <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/10 p-3 rounded-md shadow-sm mt-6">Document Uploads</div>
 
               <div className="space-y-2">
@@ -525,8 +558,13 @@ export default function LoginManagement() {
                   onChange={(e) => handleFileChange(e, "appointmentLetterUpload")}
                   className="rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 />
-                {formData.appointmentLetterUpload && <p className="text-xs text-muted-foreground mt-1">Current: {formData.appointmentLetterUpload}</p>}
+                {formData.appointmentLetterUpload && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Current: {typeof formData.appointmentLetterUpload === 'string' ? formData.appointmentLetterUpload : formData.appointmentLetterUpload.name}
+                  </p>
+                )}
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="adharFrontUpload">Aadhar Front Upload</Label>
                 <Input
@@ -535,8 +573,13 @@ export default function LoginManagement() {
                   onChange={(e) => handleFileChange(e, "adharFrontUpload")}
                   className="rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 />
-                {formData.adharFrontUpload && <p className="text-xs text-muted-foreground mt-1">Current: {formData.adharFrontUpload}</p>}
+                {formData.adharFrontUpload && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Current: {typeof formData.adharFrontUpload === 'string' ? formData.adharFrontUpload : formData.adharFrontUpload.name}
+                  </p>
+                )}
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="additionalDocument1Upload">Additional Document 1</Label>
                 <Input
@@ -545,8 +588,13 @@ export default function LoginManagement() {
                   onChange={(e) => handleFileChange(e, "additionalDocument1Upload")}
                   className="rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 />
-                {formData.additionalDocument1Upload && <p className="text-xs text-muted-foreground mt-1">Current: {formData.additionalDocument1Upload}</p>}
+                {formData.additionalDocument1Upload && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Current: {typeof formData.additionalDocument1Upload === 'string' ? formData.additionalDocument1Upload : formData.additionalDocument1Upload.name}
+                  </p>
+                )}
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="additionalDocument2Upload">Additional Document 2</Label>
                 <Input
@@ -555,10 +603,14 @@ export default function LoginManagement() {
                   onChange={(e) => handleFileChange(e, "additionalDocument2Upload")}
                   className="rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 />
-                {formData.additionalDocument2Upload && <p className="text-xs text-muted-foreground mt-1">Current: {formData.additionalDocument2Upload}</p>}
+                {formData.additionalDocument2Upload && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Current: {typeof formData.additionalDocument2Upload === 'string' ? formData.additionalDocument2Upload : formData.additionalDocument2Upload.name}
+                  </p>
+                )}
               </div>
 
-              <div className="flex justify-end space-x-2 pt-6 md:col-span-2"> {/* Ensure buttons span both columns */}
+              <div className="flex justify-end space-x-2 pt-6 md:col-span-2">
                 <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)} className="px-5 py-2 rounded-md">
                   Cancel
                 </Button>
@@ -571,115 +623,285 @@ export default function LoginManagement() {
         </Dialog>
       </div>
 
-      <Card className="border-border shadow-lg rounded-lg">
-        <CardHeader className="border-b border-border pb-4">
-          <CardTitle className="text-xl font-semibold text-foreground">Registered Users & Labourers</CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Activate, deactivate, or manage user and labourer credentials
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-[50px]">Sr</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Designation/Trade</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Last Login</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user, index) => (
-                  <TableRow key={user.id} className="hover:bg-muted/30 transition-colors">
-                    <TableCell className="font-medium">{index + 1}</TableCell>
-                    <TableCell>
-                      <div className="font-medium text-foreground">{user.nameOfInductee}</div>
-                      <div className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Mail className="h-3.5 w-3.5" />
-                        {user.email}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="px-3 py-1 text-xs font-semibold rounded-full bg-secondary text-secondary-foreground">
-                        {user.designation}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Phone className="h-3.5 w-3.5" />
-                        {user.mobileNumber}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="h-3.5 w-3.5" />
-                        {user.lastLogin}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.status === "active" ? "default" : "destructive"} className="px-3 py-1 text-xs font-semibold rounded-full">
-                        {user.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="rounded-full hover:bg-blue-100/50 text-blue-600 hover:text-blue-700"
-                          onClick={() => handleEdit(user)}
-                          title="Edit User"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className={`rounded-full ${user.status === "active" ? "hover:bg-yellow-100/50 text-yellow-600 hover:text-yellow-700" : "hover:bg-green-100/50 text-green-600 hover:text-green-700"}`}
-                          onClick={() => handleSuspend(user.id)}
-                          title={user.status === "active" ? "Suspend User" : "Activate User"}
-                        >
-                          <Ban className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-full hover:bg-red-100/50 text-red-600 hover:text-red-700" title="Delete User">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="rounded-lg shadow-xl">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="text-xl font-semibold text-destructive">Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription className="text-muted-foreground">
-                                This action cannot be undone. This will permanently delete the user
-                                and remove their access from the system.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter className="pt-4">
-                              <AlertDialogCancel className="px-5 py-2 rounded-md">Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(user.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 px-5 py-2 rounded-md"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
+      {loading && (
+        <div className="text-center p-8">
+          <p>Loading data...</p>
+        </div>
+      )}
+      {error && (
+        <div className="text-center p-8 text-red-500">
+          <p>Error: {error}</p>
+        </div>
+      )}
+      {!loading && !error && users.length === 0 && (
+        <div className="text-center p-8 text-muted-foreground">
+          <p>No users or labourers found.</p>
+        </div>
+      )}
+
+      {!loading && !error && users.length > 0 && (
+        <Card className="border-border shadow-lg rounded-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-border p-4">
+            <div className="flex flex-col">
+              <CardTitle className="text-2xl font-bold tracking-tight text-foreground">Registered Users & Labourers</CardTitle>
+              <CardDescription className="text-muted-foreground mt-1">
+                Activate, deactivate, or manage user and labourer credentials
+              </CardDescription>
+            </div>
+            <Input
+              type="text"
+              placeholder="Search by name or number..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="max-w-xs rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            />
+          </CardHeader>
+          <CardContent className="p-0">
+
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Sr</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Designation</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Gender / Blood Group</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Documents</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user, index) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
+                        <div>{user.nameOfInductee}</div>
+                        <div className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(user.dateOfBirth).toLocaleDateString()}
+                        </div>
+                        <div className="text-sm text-muted-foreground flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          {user.age} years
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{user.designation}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          {user.mobileNumber || "-"}
+                        </div>
+                        <div className="text-sm text-muted-foreground flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          {user.email || "-"}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>{user.gender}</div>
+                        <div>{user.bloodGroup}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.status === "active" ? "success" : "destructive"}>
+                          {user.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleViewUser(user.id)} // <-- Use the correct property name (e.g., user.id)
+                        >
+                          <Eye className="h-4 w-4 text-blue-600" />
+                        </Button>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-1 justify-end">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleEdit(user)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleSuspend(user.id)}
+                          >
+                            <Ban className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will deactivate the contractor from the system. They can be restored later if needed, but will no longer appear in the active list.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(user.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <Dialog open={!!viewingUser} onOpenChange={(open) => !open && setViewingUser(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">Labourer Details and Documents</DialogTitle>
+            <DialogDescription>Details and photos of the selected labourer</DialogDescription>
+          </DialogHeader>
+          {viewingUser && (
+            <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
+              {/* Personal Information Section */}
+              <div className="border rounded-lg p-4 bg-muted/50">
+                <h3 className="text-md font-medium mb-4">Personal Information</h3>
+                <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
+                  <div className="flex flex-col"><span className="font-semibold">Name:</span><span>{viewingUser.lab_name}</span></div>
+                  <div className="flex flex-col"><span className="font-semibold">Date of Birth:</span><span>{new Date(viewingUser.date_of_birth).toLocaleDateString()}</span></div>
+                  <div className="flex flex-col"><span className="font-semibold">Age:</span><span>{viewingUser.age}</span></div>
+                  <div className="flex flex-col"><span className="font-semibold">Gender:</span><span>{viewingUser.gender}</span></div>
+                  <div className="flex flex-col"><span className="font-semibold">Blood Group:</span><span>{viewingUser.blood_group}</span></div>
+                  <div className="flex flex-col"><span className="font-semibold">Mobile Number:</span><span>{viewingUser.mobile_number}</span></div>
+                  <div className="flex flex-col col-span-2"><span className="font-semibold">Email ID:</span><span>{viewingUser.email_id}</span></div>
+                  <div className="flex flex-col col-span-2"><span className="font-semibold">Aadhar Number:</span><span>{viewingUser.aadhar_number}</span></div>
+                  <div className="flex flex-col"><span className="font-semibold">Designation:</span><span>{viewingUser.designation_trade}</span></div>
+                  <div className="flex flex-col"><span className="font-semibold">Vendor:</span><span>{viewingUser.select_vendor}</span></div>
+                  <div className="flex flex-col col-span-2"><span className="font-semibold">Reported to Incharge:</span><span>{viewingUser.reported_to_incharge}</span></div>
+                </div>
+              </div>
+
+              {/* Document Status Section */}
+              <div className="border rounded-lg p-4">
+                <h3 className="text-md font-medium mb-4">Document Status</h3>
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Photo Upload:</span>
+                    <Badge variant={viewingUser.photo_upload ? "default" : "secondary"}>
+                      {viewingUser.photo_upload ? "Uploaded" : "Not Uploaded"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Self Declaration:</span>
+                    <Badge variant={viewingUser.self_declaration_upload ? "default" : "secondary"}>
+                      {viewingUser.self_declaration_upload ? "Uploaded" : "Not Uploaded"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Medical Certificate:</span>
+                    <Badge variant={viewingUser.medical_certificate ? "default" : "secondary"}>
+                      {viewingUser.medical_certificate ? "Uploaded" : "Not Uploaded"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Appointment Letter:</span>
+                    <Badge variant={viewingUser.appointment_letter_upload ? "default" : "secondary"}>
+                      {viewingUser.appointment_letter_upload ? "Uploaded" : "Not Uploaded"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Aadhar Front:</span>
+                    <Badge variant={viewingUser.aadhar_front_upload ? "default" : "secondary"}>
+                      {viewingUser.aadhar_front_upload ? "Uploaded" : "Not Uploaded"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Additional Document 1:</span>
+                    <Badge variant={viewingUser.additional_document_1 ? "default" : "secondary"}>
+                      {viewingUser.additional_document_1 ? "Uploaded" : "Not Uploaded"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Additional Document 2:</span>
+                    <Badge variant={viewingUser.additional_document_2 ? "default" : "secondary"}>
+                      {viewingUser.additional_document_2 ? "Uploaded" : "Not Uploaded"}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Images Section - New Code */}
+              <div className="border rounded-lg p-4">
+                <h3 className="text-md font-medium mb-4">Uploaded Documents</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Conditional rendering for Photo Upload */}
+                  {viewingUser.photo_upload && viewingUser.photo_upload_url && (
+                    <div className="flex flex-col items-center">
+                      <span className="font-semibold text-sm mb-2">Labourer Photo</span>
+                      <div className="relative w-full h-48 border rounded-lg overflow-hidden">
+                        <Image
+                          src={viewingUser.photo_upload_url}
+                          alt="Labourer Photo"
+                          layout="fill"
+                          objectFit="contain"
+                          className="p-2"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Conditional rendering for Aadhar Front */}
+                  {viewingUser.aadhar_front_upload && viewingUser.aadhar_front_url && (
+                    <div className="flex flex-col items-center">
+                      <span className="font-semibold text-sm mb-2">Aadhar Front</span>
+                      <div className="relative w-full h-48 border rounded-lg overflow-hidden">
+                        <Image
+                          src={viewingUser.aadhar_front_url}
+                          alt="Aadhar Front"
+                          layout="fill"
+                          objectFit="contain"
+                          className="p-2"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* You can add more image sections here for other documents like Medical Certificate, etc. */}
+                  {/* Example for Medical Certificate */}
+                  {viewingUser.medical_certificate && viewingUser.medical_certificate_url && (
+                    <div className="flex flex-col items-center">
+                      <span className="font-semibold text-sm mb-2">Medical Certificate</span>
+                      <div className="relative w-full h-48 border rounded-lg overflow-hidden">
+                        <Image
+                          src={viewingUser.medical_certificate_url}
+                          alt="Medical Certificate"
+                          layout="fill"
+                          objectFit="contain"
+                          className="p-2"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-

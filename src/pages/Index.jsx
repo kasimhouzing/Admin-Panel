@@ -15,7 +15,7 @@ const Index = () => {
               Lodha Stella
             </h1>
             <h2 className="text-3xl font-semibold mb-4">
-              Camp Management System
+              Site Management System
             </h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
               Comprehensive administration panel for managing construction site operations,
@@ -37,7 +37,7 @@ const Index = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-12">
           <h3 className="text-3xl font-bold text-foreground mb-4">
-            Complete Site Management Solution
+            Site Management Solution
           </h3>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Streamline your construction site operations with our comprehensive
@@ -51,7 +51,7 @@ const Index = () => {
               <div className="bg-blue-50 p-3 rounded-full w-fit mx-auto mb-4">
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
-              <CardTitle>Login Management</CardTitle>
+              <CardTitle>Login</CardTitle>
               <CardDescription>
                 Manage access for camp bosses, supervisors, and foremen
               </CardDescription>
@@ -63,7 +63,7 @@ const Index = () => {
               <div className="bg-green-50 p-3 rounded-full w-fit mx-auto mb-4">
                 <Building2 className="h-8 w-8 text-green-600" />
               </div>
-              <CardTitle>Contractor Management</CardTitle>
+              <CardTitle>Contractor</CardTitle>
               <CardDescription>
                 Track and manage labor contractors and suppliers
               </CardDescription>
@@ -75,7 +75,7 @@ const Index = () => {
               <div className="bg-purple-50 p-3 rounded-full w-fit mx-auto mb-4">
                 <Users className="h-8 w-8 text-purple-600" />
               </div>
-              <CardTitle>Labor Management</CardTitle>
+              <CardTitle>Labor</CardTitle>
               <CardDescription>
                 Comprehensive laborer registration and tracking
               </CardDescription>
@@ -87,7 +87,7 @@ const Index = () => {
               <div className="bg-orange-50 p-3 rounded-full w-fit mx-auto mb-4">
                 <ClipboardList className="h-8 w-8 text-orange-600" />
               </div>
-              <CardTitle>Attendance Reports</CardTitle>
+              <CardTitle>Reports</CardTitle>
               <CardDescription>
                 Real-time attendance tracking and reporting
               </CardDescription>
@@ -96,63 +96,11 @@ const Index = () => {
         </div>
       </div>
 
-      {/* About Section */}
-      <div className="bg-muted py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-2 items-center">
-            <div>
-              <h3 className="text-3xl font-bold text-foreground mb-6">
-                About Camp Management
-              </h3>
-              <p className="text-lg text-muted-foreground mb-6">
-                Camp is a place where laborers stay on site. They sleep, rest, and have food there.
-                Our application helps camp bosses monitor laborers effectively while providing
-                comprehensive administrative tools for project managers.
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <Shield className="h-5 w-5 text-primary mr-3" />
-                  <span className="text-foreground">Secure login management system</span>
-                </div>
-                <div className="flex items-center">
-                  <ClipboardList className="h-5 w-5 text-primary mr-3" />
-                  <span className="text-foreground">Real-time attendance tracking</span>
-                </div>
-                <div className="flex items-center">
-                  <Building2 className="h-5 w-5 text-primary mr-3" />
-                  <span className="text-foreground">Contractor and labor management</span>
-                </div>
-              </div>
-            </div>
-            <Card className="border-border shadow-sm">
-              <CardHeader>
-                <CardTitle>System Architecture</CardTitle>
-                <CardDescription>Two-part solution for comprehensive management</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-primary/10 rounded-lg">
-                  <h4 className="font-semibold text-foreground mb-2">Admin Panel</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Complete administrative control for project managers
-                  </p>
-                </div>
-                <div className="p-4 bg-secondary/50 rounded-lg">
-                  <h4 className="font-semibold text-foreground mb-2">Camp Boss Mobile App</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Mobile application for on-site attendance management
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-
       {/* Footer */}
-      <footer className="bg-admin-sidebar text-white py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p>&copy; 2024 Lodha Group. All rights reserved.</p>
-          <p className="text-sm opacity-75 mt-2">Camp Management System - Phase 1</p>
+      <footer className="bg-admin-sidebar text-white py-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-7 text-center">
+          <p className="text-xs">&copy; 2025 RealTeck Group. All rights reserved.</p>
+          <p className="text-xs opacity-75 mt-1">Site Management System</p>
         </div>
       </footer>
     </div>

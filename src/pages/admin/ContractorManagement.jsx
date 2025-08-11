@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,89 +11,127 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Edit, Ban, Trash2, Phone, Mail, Building, Users, Upload, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+
+// Import the suspendContractor function
+import { fetchContractormanagement, addContractor, updateContractor, deleteContractor, suspendContractor } from "../../../api";
+
 export default function ContractorManagement() {
   const { toast } = useToast();
-  const [contractors, setContractors] = useState([
-    {
-      id: "1",
-      name: "Rajesh Sharma",
-      companyName: "ABC Construction Pvt Ltd",
-      phone: "+91 9876543210",
-      email: "rajesh@abcconstruction.com",
-      address: "123 Industrial Area, Mumbai, Maharashtra 400001",
-      referenceFrom: "Previous Project - Lodha Park",
-      totalLaborers: 45,
-      status: "active",
-      documents: ["license.pdf", "registration.pdf"]
-    },
-    {
-      id: "2",
-      name: "Sunil Patil",
-      companyName: "XYZ Builders & Contractors",
-      phone: "+91 9876543211",
-      email: "sunil@xyzbuilders.com",
-      address: "456 Construction Hub, Pune, Maharashtra 411001",
-      referenceFrom: "Referral - Lodha Palava",
-      totalLaborers: 62,
-      status: "active",
-      documents: ["license.pdf", "pan.pdf", "gst.pdf"]
-    },
-    {
-      id: "3",
-      name: "Amit Singh",
-      companyName: "Singh Contractors",
-      phone: "+91 9876543212",
-      email: "amit@singhcontractors.com",
-      address: "789 Builder's Lane, Thane, Maharashtra 400601",
-      referenceFrom: "Direct Application",
-      totalLaborers: 28,
-      status: "suspended",
-      documents: ["license.pdf"]
-    }
-  ]);
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [contractors, setContractors] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingContractor, setEditingContractor] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     companyName: "",
     phone: "",
-    email: "",
     address: "",
-    referenceFrom: ""
+    email: "",
+    referenceFrom: "",
+    totalLaborers: "",
+    documents: []
   });
 
-  const handleSubmit = (e) => {
+  const fetchContractors = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await fetchContractormanagement();
+      // Filter out soft-deleted contractors on the client-side
+      const activeContractors = data.filter(contractor => contractor.active !== false);
+
+      const mappedData = activeContractors.map(contractor => ({
+        id: contractor.id,
+        name: contractor.name,
+        companyName: contractor.company_name,
+        phone: contractor.phone,
+        email: contractor.email,
+        address: contractor.address,
+        referenceFrom: contractor.reference_from,
+        totalLaborers: contractor.total_laborers,
+        status: contractor.status,
+        documents: contractor.documents || []
+      }));
+      setContractors(mappedData);
+    } catch (err) {
+      setError("Failed to fetch contractor data.");
+      toast({
+        title: "Error",
+        description: "Failed to load contractors. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchContractors();
+  }, []);
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData({ ...formData, [id]: value });
+  };
+
+  const handleFileChange = (e) => {
+    setFormData({ ...formData, documents: [...e.target.files] });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (editingContractor) {
-      setContractors(contractors.map(contractor =>
-        contractor.id === editingContractor.id
-          ? { ...contractor, ...formData }
-          : contractor
-      ));
+    // Map formData to API format
+    const apiData = {
+      name: formData.name,
+      companyName: formData.companyName,
+      phone: formData.phone,
+      email: formData.email,
+      address: formData.address,
+      referenceFrom: formData.referenceFrom,
+      totalLaborers: parseInt(formData.totalLaborers, 10),
+      documents: formData.documents.map(file => file.name),
+      status: formData.status, // Simulating document handling
+    };
+
+    try {
+      if (editingContractor) {
+        await updateContractor(editingContractor.id, apiData);
+        toast({
+          title: "Contractor Updated",
+          description: "Contractor details have been successfully updated.",
+        });
+      } else {
+        await addContractor(apiData);
+        toast({
+          title: "Contractor Added",
+          description: "New contractor has been successfully added to the system.",
+        });
+      }
+      // Refresh the list after a successful operation
+      fetchContractors();
+      setIsAddDialogOpen(false);
+    } catch (err) {
       toast({
-        title: "Contractor Updated",
-        description: "Contractor details have been successfully updated.",
+        title: "Error",
+        description: `Failed to ${editingContractor ? "update" : "add"} contractor. Please try again.`,
+        variant: "destructive"
+      });
+    } finally {
+      setFormData({
+        name: "",
+        companyName: "",
+        phone: "",
+        email: "",
+        address: "",
+        referenceFrom: "",
+        totalLaborers: "",
+        documents: []
       });
       setEditingContractor(null);
-    } else {
-      const newContractor = {
-        id: (contractors.length + 1).toString(),
-        ...formData,
-        totalLaborers: 0,
-        status: "active",
-        documents: []
-      };
-      setContractors([...contractors, newContractor]);
-      toast({
-        title: "Contractor Added",
-        description: "New contractor has been successfully added to the system.",
-      });
     }
-
-    setFormData({ name: "", companyName: "", phone: "", email: "", address: "", referenceFrom: "" });
-    setIsAddDialogOpen(false);
   };
 
   const handleEdit = (contractor) => {
@@ -104,31 +142,78 @@ export default function ContractorManagement() {
       phone: contractor.phone,
       email: contractor.email,
       address: contractor.address,
-      referenceFrom: contractor.referenceFrom
+      referenceFrom: contractor.referenceFrom,
+      totalLaborers: contractor.totalLaborers,
+      documents: contractor.documents,
+      status: contractor.status,
     });
     setIsAddDialogOpen(true);
   };
 
-  const handleSuspend = (contractorId) => {
-    setContractors(contractors.map(contractor =>
-      contractor.id === contractorId
-        ? { ...contractor, status: contractor.status === "active" ? "suspended" : "active" }
-        : contractor
-    ));
-    toast({
-      title: "Contractor Status Changed",
-      description: "Contractor status has been updated.",
-    });
+  const handleSuspend = async (contractorId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "active" ? "suspended" : "active";
+
+      await suspendContractor(contractorId, newStatus);
+
+      fetchContractors();
+      toast({
+        title: "Contractor Status Changed",
+        description: `Contractor status has been changed to ${newStatus}.`,
+      });
+    } catch (err) {
+      console.error("Error changing contractor status:", err);
+      toast({
+        title: "Error",
+        description: "Failed to change contractor status. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDelete = (contractorId) => {
-    setContractors(contractors.filter(contractor => contractor.id !== contractorId));
-    toast({
-      title: "Contractor Deleted",
-      description: "Contractor has been permanently removed from the system.",
-      variant: "destructive"
-    });
+  // Change the handleDelete function to reflect soft deletion
+  const handleDelete = async (contractorId) => {
+    try {
+      await deleteContractor(contractorId);
+      // After soft deleting, refetch the list to remove the contractor from the view
+      fetchContractors();
+      toast({
+        title: "Contractor Deactivated",
+        description: "Contractor has been deactivated from the system.",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to deactivate contractor. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p>Loading contractors...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96 text-red-500">
+        <p>{error}</p>
+      </div>
+    );
+  }
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+
+  const filteredContractors = contractors.filter((contractor) =>
+    contractor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contractor.phone.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -144,7 +229,16 @@ export default function ContractorManagement() {
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingContractor(null);
-              setFormData({ name: "", companyName: "", phone: "", email: "", address: "", referenceFrom: "" });
+              setFormData({
+                name: "",
+                companyName: "",
+                phone: "",
+                email: "",
+                address: "",
+                referenceFrom: "",
+                totalLaborers: "",
+                documents: []
+              });
             }}>
               <Plus className="h-4 w-4 mr-2" />
               Add Contractor
@@ -164,7 +258,7 @@ export default function ContractorManagement() {
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={handleChange}
                     placeholder="Contact person name"
                     required
                   />
@@ -174,7 +268,7 @@ export default function ContractorManagement() {
                   <Input
                     id="companyName"
                     value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                    onChange={handleChange}
                     placeholder="Company/Contractor name"
                     required
                   />
@@ -187,7 +281,7 @@ export default function ContractorManagement() {
                   <Input
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={handleChange}
                     placeholder="+91 9876543210"
                     required
                   />
@@ -198,7 +292,7 @@ export default function ContractorManagement() {
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={handleChange}
                     placeholder="contractor@company.com"
                     required
                   />
@@ -210,21 +304,35 @@ export default function ContractorManagement() {
                 <Textarea
                   id="address"
                   value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  onChange={handleChange}
                   placeholder="Complete business address"
                   required
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="referenceFrom">Reference From</Label>
-                <Input
-                  id="referenceFrom"
-                  value={formData.referenceFrom}
-                  onChange={(e) => setFormData({ ...formData, referenceFrom: e.target.value })}
-                  placeholder="How did you find this contractor?"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="referenceFrom">Reference From</Label>
+                  <Input
+                    id="referenceFrom"
+                    value={formData.referenceFrom}
+                    onChange={handleChange}
+                    placeholder="How did you find this contractor?"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="totalLaborers">Total Laborers</Label>
+                  <Input
+                    id="totalLaborers"
+                    type="number"
+                    value={formData.totalLaborers}
+                    onChange={handleChange}
+                    placeholder="e.g., 50"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -237,9 +345,16 @@ export default function ContractorManagement() {
                   <p className="text-xs text-muted-foreground">
                     PDF, JPG, PNG up to 10MB each
                   </p>
-                  <Button type="button" variant="outline" size="sm" className="mt-2">
+                  <Input
+                    id="documents"
+                    type="file"
+                    className="hidden"
+                    multiple
+                    onChange={handleFileChange}
+                  />
+                  <Label htmlFor="documents" className="inline-flex mt-2 items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
                     Choose Files
-                  </Button>
+                  </Label>
                 </div>
               </div>
 
@@ -256,12 +371,20 @@ export default function ContractorManagement() {
         </Dialog>
       </div>
 
+
       <Card className="border-border shadow-sm">
-        <CardHeader>
+        <CardHeader className="relative">
           <CardTitle>Manage Labor Contractors</CardTitle>
           <CardDescription>
             View and manage all registered labor contractors and suppliers
           </CardDescription>
+          <Input
+            type="text"
+            placeholder="Search by name, or number..."
+            value={searchTerm}
+            onChange={handleSearch}
+            className="absolute right-6 top-6 w-64 rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          />
         </CardHeader>
         <CardContent>
           <Table>
@@ -270,14 +393,13 @@ export default function ContractorManagement() {
                 <TableHead>Sr</TableHead>
                 <TableHead>Name (Company)</TableHead>
                 <TableHead>Contact</TableHead>
-                <TableHead>Total Laborers</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Documents</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {contractors.map((contractor, index) => (
+              {filteredContractors.map((contractor, index) => (
                 <TableRow key={contractor.id}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>
@@ -299,12 +421,6 @@ export default function ContractorManagement() {
                         <Mail className="h-3 w-3 mr-1 text-muted-foreground" />
                         {contractor.email}
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span className="font-medium">{contractor.totalLaborers}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -330,7 +446,7 @@ export default function ContractorManagement() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleSuspend(contractor.id)}
+                        onClick={() => handleSuspend(contractor.id, contractor.status)}
                       >
                         <Ban className="h-4 w-4" />
                       </Button>
@@ -344,8 +460,7 @@ export default function ContractorManagement() {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              This action cannot be undone. This will permanently delete the contractor
-                              and all associated data from the system.
+                              This will deactivate the contractor from the system. They can be restored later if needed, but will no longer appear in the active list.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>

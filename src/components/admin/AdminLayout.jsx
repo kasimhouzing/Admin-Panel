@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"; 
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 import { 
   Home, 
   Users, 
@@ -25,6 +26,18 @@ const navigation = [
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast(); // Initialize useToast hook
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    // Add toast notification for successful logout
+    toast({
+      title: "Logout Successful",
+      description: "You have been logged out.",
+    });
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-admin-bg">
@@ -75,10 +88,14 @@ export default function AdminLayout() {
             </h1>
             
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="icon">
+              {/* <Button variant="ghost" size="icon">
                 <Settings className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon">
+              </Button> */}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={handleLogout}
+              >
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>

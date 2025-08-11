@@ -14,23 +14,42 @@ export default function Login() {
     username: "",
     password: ""
   });
+  const [isLoading, setIsLoading] = useState(false); // Add a loading state
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => { // Make the function async
     e.preventDefault();
+    setIsLoading(true);
 
-    // Hardcoded login for Lodha Stella
-    if (credentials.username === "lodha_admin" && credentials.password === "stella@2024") {
-      toast({
-        title: "Login Successful",
-        description: "Welcome to Lodha Stella Admin Panel",
+    try {
+      const response = await fetch("http://localhost:3000/api/login", { // Replace with your actual backend URL
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
       });
-      navigate("/admin");
-    } else {
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store the token or user info if returned
+        localStorage.setItem("authToken", data.token); // Assuming your backend returns a JWT token
+        toast({
+          title: "Login Successful",
+          description: "Welcome to Lodha Stella Admin Panel",
+        });
+        navigate("/admin");
+      } else {
+        throw new Error(data.message || "Login failed");
+      }
+    } catch (error) {
       toast({
         title: "Login Failed",
-        description: "Invalid username or password. Please try again.",
+        description: error.message,
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -84,16 +103,10 @@ export default function Login() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full">
-              Sign In
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
-
-          <div className="mt-6 p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground mb-2">Demo Credentials:</p>
-            <p className="text-xs font-mono">Username: lodha_admin</p>
-            <p className="text-xs font-mono">Password: stella@2024</p>
-          </div>
         </CardContent>
       </Card>
     </div>
