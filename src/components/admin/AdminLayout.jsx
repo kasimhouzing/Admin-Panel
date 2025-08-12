@@ -1,26 +1,30 @@
 import { useState } from "react";
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"; 
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast"; // Import useToast
-import { 
-  Home, 
-  Users, 
-  Building2, 
-  UserCog, 
-  ClipboardList, 
-  Menu, 
+import {
+  Home,
+  Users,
+  Building2,
+  UserCog,
+  ClipboardList,
+  Menu,
   X,
   LogOut,
+  Tent,
   Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+//import { machine } from "os";
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: Home },
   { name: "Login Management", href: "/admin/logins", icon: UserCog },
   { name: "Contractor Management", href: "/admin/contractors", icon: Building2 },
   { name: "Labor Management", href: "/admin/laborers", icon: Users },
+  { name: "Camp Management", href: "/admin/Campmanagement", icon: Tent },
   { name: "Attendance Report", href: "/admin/attendance", icon: ClipboardList },
+  // Added the icon property
 ];
 
 export default function AdminLayout() {
@@ -86,13 +90,13 @@ export default function AdminLayout() {
             <h1 className="text-2xl font-semibold text-foreground">
               Lodha Stella - Camp Management
             </h1>
-            
+
             <div className="flex items-center space-x-4">
               {/* <Button variant="ghost" size="icon">
                 <Settings className="h-5 w-5" />
               </Button> */}
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 onClick={handleLogout}
               >

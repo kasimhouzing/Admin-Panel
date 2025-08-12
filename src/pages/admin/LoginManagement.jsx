@@ -330,14 +330,14 @@ export default function LoginManagement() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center">
-                      <Phone className="h-3 w-3 mr-1 text-muted-foreground" />
+                      <Phone className="h-3 w-3 mr-1 text-muted-foreground" />+91 
                       {user.phone}
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center text-sm">
                       <Clock className="h-3 w-3 mr-1 text-muted-foreground" />
-                      {user.lastLogin}
+                      {new Date(user.lastLogin).toLocaleString()}
                     </div>
                   </TableCell>
                   <TableCell>

@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Edit, Ban, Trash2, Phone, Mail, Clock, Eye, Calendar, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
 //import { Badge } from "@/components/ui/badge";
 //import Image from 'next/image';
 
@@ -365,7 +366,7 @@ const handleDelete = async (labId) => {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-              <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/10 p-3 rounded-md shadow-sm">Personal Details</div>
+              <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/90 p-3 rounded-md shadow-sm">Personal Details</div>
               <div className="space-y-2">
                 <Label htmlFor="nameOfInductee">Name of Inductee</Label>
                 <Input
@@ -433,7 +434,7 @@ const handleDelete = async (labId) => {
                 </Select>
               </div>
 
-              <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/10 p-3 rounded-md shadow-sm mt-6">Contact Details</div>
+              <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/90 p-3 rounded-md shadow-sm mt-6">Contact Details</div>
               <div className="space-y-2">
                 <Label htmlFor="mobileNumber">Mobile Number</Label>
                 <Input
@@ -470,7 +471,7 @@ const handleDelete = async (labId) => {
               </div>
               <div className="hidden md:block"></div>
 
-              <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/10 p-3 rounded-md shadow-sm mt-6">Work Details</div>
+              <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/90 p-3 rounded-md shadow-sm mt-6">Work Details</div>
               <div className="space-y-2">
                 <Label htmlFor="designation">Designation/Trade</Label>
                 <Select value={formData.designation} onValueChange={(value) => setFormData({ ...formData, designation: value })} required>
@@ -518,7 +519,7 @@ const handleDelete = async (labId) => {
               </div>
               <div className="hidden md:block"></div>
 
-              <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/10 p-3 rounded-md shadow-sm mt-6">Document Uploads</div>
+              <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/90 p-3 rounded-md shadow-sm mt-6">Document Uploads</div>
 
               <div className="space-y-2">
                 <Label htmlFor="photoUpload">Photo Upload</Label>
@@ -744,7 +745,7 @@ const handleDelete = async (labId) => {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              This will deactivate the contractor from the system. They can be restored later if needed, but will no longer appear in the active list.
+                              This will deactivate the labor from the system. They can be restored later if needed, but will no longer appear in the active list.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
