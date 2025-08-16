@@ -304,18 +304,18 @@ export default function LoginManagement() {
   };
 
 
-const handleDelete = async (labId) => {
-  if (window.confirm('Are you sure you want to delete this labourer?')) {
-    const result = await deleteLabourer(labId);
-    if (result.success) {
-      alert(result.message);
-      // You'll need to refresh your data here, for example:
-      // fetchLaborers(); 
-    } else {
-      alert(result.message);
+  const handleDelete = async (labId) => {
+    if (window.confirm('Are you sure you want to delete this labourer?')) {
+      const result = await deleteLabourer(labId);
+      if (result.success) {
+        alert(result.message);
+        // You'll need to refresh your data here, for example:
+        // fetchLaborers(); 
+      } else {
+        alert(result.message);
+      }
     }
-  }
-};
+  };
 
   return (
     <div className="space-y-6 p-6 bg-background text-foreground min-h-screen max-w-screen-xl mx-auto">
@@ -641,7 +641,7 @@ const handleDelete = async (labId) => {
       )}
 
       {!loading && !error && users.length > 0 && (
-        <Card className="border-border shadow-lg rounded-lg">
+        <Card className="bg-card border-border shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-border p-4">
             <div className="flex flex-col">
               <CardTitle className="text-2xl font-bold tracking-tight text-foreground">Registered Users & Labourers</CardTitle>
@@ -657,114 +657,115 @@ const handleDelete = async (labId) => {
               className="max-w-xs rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             />
           </CardHeader>
-          <CardContent className="p-0">
-
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Sr</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Designation</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Gender / Blood Group</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Documents</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((user, index) => (
-                    <TableRow key={user.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>
-                        <div>{user.nameOfInductee}</div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(user.dateOfBirth).toLocaleDateString()}
-                        </div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {user.age} years
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{user.designation}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          {user.mobileNumber || "-"}
-                        </div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          {user.email || "-"}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>{user.gender}</div>
-                        <div>{user.bloodGroup}</div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={user.status === "active" ? "success" : "destructive"}>
-                          {user.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleViewUser(user.id)} // <-- Use the correct property name (e.g., user.id)
-                        >
-                          <Eye className="h-4 w-4 text-blue-600" />
-                        </Button>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-1 justify-end">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleEdit(user)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleSuspend(user.id)}
-                          >
-                            <Ban className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will deactivate the labor from the system. They can be restored later if needed, but will no longer appear in the active list.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(user.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                        </div>
-                      </TableCell>
+          <CardContent>
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="font-semibold">Sr</TableHead>
+                      <TableHead className="font-semibold">Name</TableHead>
+                      <TableHead className="font-semibold">Designation</TableHead>
+                      <TableHead className="font-semibold">Contact</TableHead>
+                      <TableHead className="font-semibold">Gender / Blood Group</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold">Documents</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user, index) => (
+                      <TableRow key={user.id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>
+                          <div>{user.nameOfInductee}</div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(user.dateOfBirth).toLocaleDateString()}
+                          </div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <User className="h-3 w-3" />
+                            {user.age} years
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{user.designation}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {user.mobileNumber || "-"}
+                          </div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            {user.email || "-"}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>{user.gender}</div>
+                          <div>{user.bloodGroup}</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={user.status === "active" ? "success" : "destructive"}>
+                            {user.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleViewUser(user.id)} // <-- Use the correct property name (e.g., user.id)
+                          >
+                            <Eye className="h-4 w-4 text-blue-600" />
+                          </Button>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleEdit(user)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleSuspend(user.id)}
+                            >
+                              <Ban className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will deactivate the labor from the system. They can be restored later if needed, but will no longer appear in the active list.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(user.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </CardContent>
         </Card>

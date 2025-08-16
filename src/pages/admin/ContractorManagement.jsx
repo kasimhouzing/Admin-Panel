@@ -372,7 +372,7 @@ export default function ContractorManagement() {
       </div>
 
 
-      <Card className="border-border shadow-sm">
+      <Card className="bg-card border-border shadow-lg">
         <CardHeader className="relative">
           <CardTitle>Manage Labor Contractors</CardTitle>
           <CardDescription>
@@ -387,99 +387,101 @@ export default function ContractorManagement() {
           />
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Sr</TableHead>
-                <TableHead>Name (Company)</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Documents</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredContractors.map((contractor, index) => (
-                <TableRow key={contractor.id}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{contractor.name}</div>
-                      <div className="text-sm text-muted-foreground flex items-center">
-                        <Building className="h-3 w-3 mr-1" />
-                        {contractor.companyName}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="flex items-center text-sm">
-                        <Phone className="h-3 w-3 mr-1 text-muted-foreground" />
-                        {contractor.phone}
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <Mail className="h-3 w-3 mr-1 text-muted-foreground" />
-                        {contractor.email}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={contractor.status === "active" ? "default" : "destructive"}>
-                      {contractor.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-1">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{contractor.documents.length} files</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(contractor)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSuspend(contractor.id, contractor.status)}
-                      >
-                        <Ban className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will deactivate the contractor from the system. They can be restored later if needed, but will no longer appear in the active list.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(contractor.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
+          <div className="rounded-lg border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="font-semibold">Sr</TableHead>
+                  <TableHead className="font-semibold">Name (Company)</TableHead>
+                  <TableHead className="font-semibold">Contact</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Documents</TableHead>
+                  <TableHead className="font-semibold">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredContractors.map((contractor, index) => (
+                  <TableRow key={contractor.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{contractor.name}</div>
+                        <div className="text-sm text-muted-foreground flex items-center">
+                          <Building className="h-3 w-3 mr-1" />
+                          {contractor.companyName}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center text-sm">
+                          <Phone className="h-3 w-3 mr-1 text-muted-foreground" />
+                          {contractor.phone}
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <Mail className="h-3 w-3 mr-1 text-muted-foreground" />
+                          {contractor.email}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={contractor.status === "active" ? "default" : "destructive"}>
+                        {contractor.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-1">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{contractor.documents.length} files</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(contractor)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleSuspend(contractor.id, contractor.status)}
+                        >
+                          <Ban className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will deactivate the contractor from the system. They can be restored later if needed, but will no longer appear in the active list.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(contractor.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -285,9 +285,9 @@ export default function LoginManagement() {
         </Dialog>
       </div>
 
-      <Card className="border-border shadow-sm">
+      <Card className="bg-card border-border shadow-lg">
         <CardHeader className="relative">
-          <CardTitle>Manage Logins</CardTitle>
+          <CardTitle className="font-semibold">Manage Logins</CardTitle>
           <CardDescription>
             Activate, deactivate, or manage user login credentials
           </CardDescription>
@@ -300,100 +300,106 @@ export default function LoginManagement() {
           />
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Sr</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Designation</TableHead>
-                <TableHead>Phone Number</TableHead>
-                <TableHead>Last Login</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredlogin.map((user, index) => (
-                <TableRow key={user.id}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{user.name}</div>
-                      <div className="text-sm text-muted-foreground flex items-center">
-                        <Mail className="h-3 w-3 mr-1" />
-                        {user.email}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{user.designation}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Phone className="h-3 w-3 mr-1 text-muted-foreground" />+91 
-                      {user.phone}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center text-sm">
-                      <Clock className="h-3 w-3 mr-1 text-muted-foreground" />
-                      {new Date(user.lastLogin).toLocaleString()}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={user.status === "active" ? "default" : "destructive"}>
-                      {user.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(user)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSuspend(user.id)}
-                      >
-                        <Ban className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will permanently delete the user and remove their access from the system.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(user.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
+          <div className="rounded-lg border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="font-semibold">Sr</TableHead>
+                  <TableHead className="font-semibold">Name</TableHead>
+                  <TableHead className="font-semibold">Designation</TableHead>
+                  <TableHead className="font-semibold">Phone Number</TableHead>
+                  <TableHead className="font-semibold">Last Login</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredlogin.map((user, index) => (
+                  <TableRow key={user.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-sm text-muted-foreground flex items-center">
+                          <Mail className="h-3 w-3 mr-1" />
+                          {user.email}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{user.designation}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <Phone className="h-3 w-3 mr-1 text-muted-foreground" />+91{" "}
+                        {user.phone}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center text-sm">
+                        <Clock className="h-3 w-3 mr-1 text-muted-foreground" />
+                        {new Date(user.lastLogin).toLocaleString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={user.status === "active" ? "default" : "destructive"}
+                      >
+                        {user.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(user)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleSuspend(user.id)}
+                        >
+                          <Ban className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="font-semibold">Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will
+                                permanently delete the user and remove their
+                                access from the system.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(user.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
-    </div>
+    </div >
   );
 }
