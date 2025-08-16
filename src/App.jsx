@@ -12,7 +12,7 @@ import ContractorManagement from "./pages/admin/ContractorManagement";
 import LaborManagement from "./pages/admin/LaborManagement";
 import AttendanceReport from "./pages/admin/AttendanceReport";
 import Login from "./pages/admin/Login";
-import Campmanagement from "./pages/admin/campManagement";
+import Campmanagement from "./pages/admin/Campmangement";
 
 const queryClient = new QueryClient();
 
