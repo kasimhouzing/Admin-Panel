@@ -602,8 +602,8 @@ app.get('/api/contractors/:labId', async (req, res) => {
 
 
 // DELETE endpoint to remove a labourer record
-app.delete('/api/labourer/:id', async (req, res) => {    
-    
+app.delete('/api/labourer/:id', async (req, res) => {
+
     const { id } = req.params;
     console.log('Attempting to delete labourer with ID:', id);
     try {
@@ -621,6 +621,177 @@ app.delete('/api/labourer/:id', async (req, res) => {
     }
 });
 
+// Camp Management API: Fetches room allocation data from the database.
+app.get('/api/camp-management', async (req, res) => {
+    try {
+        const queryText = `    SELECT
+            ra.id,
+            ra.room,
+            ra.Capacity,
+            COUNT(ld.lab_id) AS actual
+        FROM ad.Room_Allocation AS ra
+        LEFT JOIN ad.Labourer_Details AS ld
+            ON ra.room = ld.room
+            WHERE
+    ra.active = true
+        GROUP BY
+            ra.id,
+            ra.room,
+            ra.Capacity
+        ORDER BY
+            ra.id ASC;`;
+        const result = await client.query(queryText);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching room allocation data:', error);
+        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    }
+});
+
+
+
+// Camp Management API: Fetches labors allocation data from the database.
+app.get('/api/labor-management', async (req, res) => {
+    try {
+        // Remove the 'LIMIT 1' clause to fetch all labor data
+        const queryText = `SELECT lab_id, lab_Name, Mobile_Number, Aadhar_Number, Photo_Upload, room
+                           FROM ad.Labourer_Details
+                           ORDER BY lab_id ASC`;
+        const result = await client.query(queryText);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching room allocation data:', error);
+        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    }
+});
+
+
+// Endpoint to update a laborer's room
+app.put('/api/labors/room/:labId', async (req, res) => {
+    const { labId } = req.params;
+    const { room } = req.body;
+
+    if (!room) {
+        return res.status(400).json({ error: 'Room value is required.' });
+    }
+    try {
+        const result = await client.query(
+            'UPDATE ad.Labourer_Details SET room = $1, updated_date = CURRENT_TIMESTAMP WHERE lab_id = $2 RETURNING *',
+            [room, labId]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Laborer not found' });
+        }
+        res.status(200).json(result.rows[0]);
+    } catch (err) {
+        console.error('Error updating laborer room:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+app.get('/api/rooms-management', async (req, res) => {
+    const { room } = req.query;
+
+    if (!room) {
+        return res.status(400).json({ error: 'The room parameter is required. Please provide it as a query parameter (e.g., ?room=Room D).' });
+    }
+
+    try {
+        const queryText = `
+            SELECT
+                ld.lab_id,
+                ld.room,
+                ld.lab_Name,
+                ld.Mobile_Number
+            FROM ad.Labourer_Details AS ld
+            LEFT JOIN ad.Room_Allocation AS ra
+                ON ra.room = ld.room
+            WHERE
+                ld.room = $1
+            ORDER BY
+                ld.lab_id ASC;
+        `;
+
+        const result = await client.query(queryText, [room]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: `No laborers found for room: ${room}` });
+        }
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching room allocation data:', error);
+        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    }
+});
+
+
+// Room Insert code room management 
+// POST route to insert a new room
+app.post('/api/room-allocation', async (req, res) => {
+    const { roomName, capacity } = req.body;
+
+    // Basic validation
+    if (!roomName || !capacity) {
+        return res.status(400).json({ error: 'Room name and capacity are required.' });
+    }
+
+    try {
+        const queryText = 'INSERT INTO ad.Room_Allocation(room, capacity) VALUES($1, $2) RETURNING *';
+        const result = await client.query(queryText, [roomName, capacity]);
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error inserting new room:', error);
+        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    }
+});
+
+
+app.put('/api/laborer-deallocate/:lab_id', async (req, res) => {
+    const { lab_id } = req.params;
+
+    if (!lab_id) {
+        return res.status(400).json({ error: 'Laborer ID is required for deallocation.' });
+    }
+
+    try {
+        const queryText = `
+            UPDATE ad.Labourer_Details 
+            SET room = 0, updated_date = CURRENT_TIMESTAMP 
+            WHERE lab_id = $1
+            RETURNING *;
+        `;
+        const result = await client.query(queryText, [lab_id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Laborer not found.' });
+        }
+
+        res.status(200).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error deallocating laborer:', error);
+        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    }
+});
+
+
+app.put('/api/room-deactivate/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const queryText = 'UPDATE ad.Room_Allocation SET active = false, update_date = CURRENT_TIMESTAMP WHERE  id = $1 RETURNING *';
+        const result = await client.query(queryText, [id]);
+
+          if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Room not found.' });
+        }
+         res.status(200).json({ message: 'Room deactivated successfully', room: result.rows[0] });
+
+        res.status(200).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error deactivating room:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 
 // Start the server

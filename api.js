@@ -21,31 +21,31 @@ const handleApiCall = async (url, options) => {
 };
 
 export const fetchLoginmanagement = async () => {
-    try {
-        const token = localStorage.getItem('token');
+  try {
+    const token = localStorage.getItem('token');
 
-        const response = await axios.get(`${API_URL}/api/widgets-data`, {
-            headers: {
-                Authorization: token ? `Bearer ${token}` : '',
-                'Content-Type': 'application/json',
-            },
-            withCredentials: true,
-        });
+    const response = await axios.get(`${API_URL}/api/widgets-data`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+    });
 
-        const management = response.data;
+    const management = response.data;
 
-        console.log("Fetched Login Management:", management);
+    console.log("Fetched Login Management:", management);
 
-        if (!Array.isArray(management)) {
-            console.warn("Data is not an array:", management);
-            return [];
-        }
-
-        return management;
-    } catch (error) {
-        console.error("Error fetching Login Management:", error);
-        return [];
+    if (!Array.isArray(management)) {
+      console.warn("Data is not an array:", management);
+      return [];
     }
+
+    return management;
+  } catch (error) {
+    console.error("Error fetching Login Management:", error);
+    return [];
+  }
 };
 
 
@@ -71,127 +71,127 @@ export const Addloginmanagement = async (management) => {
 
 // 3. Update an existing user
 export const updateLoginmanagement = async (userId, userData) => {
-    return handleApiCall(`${API_URL}/api/updatedusers/${userId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-    });
+  return handleApiCall(`${API_URL}/api/updatedusers/${userId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
+  });
 };
 
 // 4. Update a user's status (active/suspended)
 export const suspendLoginmanagement = async (userId, newStatus) => {
-    return handleApiCall(`${API_URL}/api/users/status/${userId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-    });
+  return handleApiCall(`${API_URL}/api/users/status/${userId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ status: newStatus }),
+  });
 };
 
 
 
 export const deleteLoginmanagement = async (userId) => {
-    try {
-        const response = await axios.delete(`${API_URL}/api/users/${userId}`, {
-            headers: getAuthHeaders(),
-            withCredentials: true,
-        });
-        // The server returns a 204 No Content status, so the response.data will be empty.
-        // We just need to check if the call was successful.
-        return response.status === 204;
-    } catch (error) {
-        console.error(`Error deactivating user with id ${userId}:`, error);
-        // Throw the error to be caught by the handleDelete function
-        throw error;
-    }
+  try {
+    const response = await axios.delete(`${API_URL}/api/users/${userId}`, {
+      headers: getAuthHeaders(),
+      withCredentials: true,
+    });
+    // The server returns a 204 No Content status, so the response.data will be empty.
+    // We just need to check if the call was successful.
+    return response.status === 204;
+  } catch (error) {
+    console.error(`Error deactivating user with id ${userId}:`, error);
+    // Throw the error to be caught by the handleDelete function
+    throw error;
+  }
 };
 
 
 export const fetchContractormanagement = async () => {
-    try {
-        const token = localStorage.getItem('token');
+  try {
+    const token = localStorage.getItem('token');
 
-        const response = await axios.get(`${API_URL}/api/contractorsdata`, {
-            headers: {
-                Authorization: token ? `Bearer ${token}` : '',
-                'Content-Type': 'application/json',
-            },
-            withCredentials: true,
-        });
+    const response = await axios.get(`${API_URL}/api/contractorsdata`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+    });
 
-        const contractor = response.data;
+    const contractor = response.data;
 
-        console.log("Fetched Login Management:", contractor);
+    console.log("Fetched Login Management:", contractor);
 
-        if (!Array.isArray(contractor)) {
-            console.warn("Data is not an array:", contractor);
-            return [];
-        }
-
-        return contractor;
-    } catch (error) {
-        console.error("Error fetching Login contractor:", error);
-        return [];
+    if (!Array.isArray(contractor)) {
+      console.warn("Data is not an array:", contractor);
+      return [];
     }
+
+    return contractor;
+  } catch (error) {
+    console.error("Error fetching Login contractor:", error);
+    return [];
+  }
 };
 
 // POST a new contractor
 export const addContractor = async (contractorData) => {
-    try {
-        const response = await axios.post(`${API_URL}/api/contractorsdata`, contractorData, {
-            headers: getAuthHeaders(),
-            withCredentials: true,
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error adding new contractor:", error);
-        throw error;
-    }
+  try {
+    const response = await axios.post(`${API_URL}/api/contractorsdata`, contractorData, {
+      headers: getAuthHeaders(),
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding new contractor:", error);
+    throw error;
+  }
 };
 
 // PUT to update a contractor
 export const updateContractor = async (id, contractorData) => {
-    try {
-        const response = await axios.put(`${API_URL}/api/contractorsdata/${id}`, contractorData, {
-            headers: getAuthHeaders(),
-            withCredentials: true,
-        });
-        return response.data;
-    } catch (error) {
-        console.error(`Error updating contractor with id ${id}:`, error);
-        throw error;
-    }
+  try {
+    const response = await axios.put(`${API_URL}/api/contractorsdata/${id}`, contractorData, {
+      headers: getAuthHeaders(),
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating contractor with id ${id}:`, error);
+    throw error;
+  }
 };
 
 // DELETE a contractor (soft delete)
 export const deleteContractor = async (id) => {
-    try {
-        const response = await axios.delete(`${API_URL}/api/contractorsdata/${id}`, {
-            headers: getAuthHeaders(),
-            withCredentials: true,
-        });
-        return response.data;
-    } catch (error) {
-        console.error(`Error deleting contractor with id ${id}:`, error);
-        throw error;
-    }
+  try {
+    const response = await axios.delete(`${API_URL}/api/contractorsdata/${id}`, {
+      headers: getAuthHeaders(),
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting contractor with id ${id}:`, error);
+    throw error;
+  }
 };
 
 // Cleaner, axios-based version of the suspend user function
 export const suspendContractor = async (id, newStatus) => {
-    try {
-        const response = await axios.put(`${API_URL}/api/contractors/status/${id}`, { status: newStatus }, {
-            headers: getAuthHeaders(),
-            withCredentials: true,
-        });
-        return response.data;
-    } catch (error) {
-        console.error(`Error suspending contractor with id ${id}:`, error);
-        throw error;
-    }
+  try {
+    const response = await axios.put(`${API_URL}/api/contractors/status/${id}`, { status: newStatus }, {
+      headers: getAuthHeaders(),
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error suspending contractor with id ${id}:`, error);
+    throw error;
+  }
 };
 
 // Assuming you have a way to get the user's token
@@ -211,31 +211,31 @@ const getAuthHeaders = () => {
 
 //labo Management fetch the table 
 export const fetchlabormanagementdata = async () => {
-    try {
-        const token = localStorage.getItem('token');
+  try {
+    const token = localStorage.getItem('token');
 
-        const response = await axios.get(`${API_URL}/api/labormanagement`, {
-            headers: {
-                Authorization: token ? `Bearer ${token}` : '',
-                'Content-Type': 'application/json',
-            },
-            withCredentials: true,
-        });
+    const response = await axios.get(`${API_URL}/api/labormanagement`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+    });
 
-        const laborers = response.data;
+    const laborers = response.data;
 
-        console.log("Fetched Labor Management:", laborers);
+    console.log("Fetched Labor Management:", laborers);
 
-        if (!Array.isArray(laborers)) {
-            console.warn("Data is not an array:", laborers);
-            return [];
-        }
-
-        return laborers;
-    } catch (error) {
-        console.error("Error fetching Labor Management:", error);
-        return [];
+    if (!Array.isArray(laborers)) {
+      console.warn("Data is not an array:", laborers);
+      return [];
     }
+
+    return laborers;
+  } catch (error) {
+    console.error("Error fetching Labor Management:", error);
+    return [];
+  }
 };
 
 
@@ -264,47 +264,47 @@ export const login = async (credentials) => {
 
 // POST a new contractor
 export const addlabormanagement = async (laborers) => {
-    try {
-        const response = await axios.post(`${API_URL}/insert-labourer`, laborers, {
-            headers: getAuthHeaders(),
-            withCredentials: true,
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error adding new contractor:", error);
-        throw error;
-    }
+  try {
+    const response = await axios.post(`${API_URL}/insert-labourer`, laborers, {
+      headers: getAuthHeaders(),
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding new contractor:", error);
+    throw error;
+  }
 }
 
 
 
 // POST a new labor managenment -> This should be a PUT to update
 export const updatelabormanagement = async (labId, labourers) => {
-    try {
-        // Change from .post to .put
-        const response = await axios.put(`${API_URL}/labourer/${labId}`, labourers, {
-            headers: getAuthHeaders(),
-            withCredentials: true,
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error updating labourer:", error); // Changed log message
-        throw error;
-    }
+  try {
+    // Change from .post to .put
+    const response = await axios.put(`${API_URL}/labourer/${labId}`, labourers, {
+      headers: getAuthHeaders(),
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating labourer:", error); // Changed log message
+    throw error;
+  }
 }
 
 // Cleaner, axios-based version of the suspend user function
 export const suspendLabormanagement = async (userId, newStatus) => {
-    try {
-        const response = await axios.put(`${API_URL}/api/contractors/status/${userId}`, { status: newStatus }, {
-            headers: getAuthHeaders(),
-            withCredentials: true,
-        });
-        return response.data;
-    } catch (error) {
-        console.error(`Error suspending contractor with id ${userId}:`, error);
-        throw error;
-    }
+  try {
+    const response = await axios.put(`${API_URL}/api/contractors/status/${userId}`, { status: newStatus }, {
+      headers: getAuthHeaders(),
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error suspending contractor with id ${userId}:`, error);
+    throw error;
+  }
 };
 
 
@@ -344,4 +344,169 @@ export const deleteLabourer = async (labId) => {
     console.error('Error deleting labourer:', error);
     return { success: false, message: error.message };
   }
+};
+
+
+//camp management rooms data api
+export const fetchcampmanagement = async () => {
+  try {
+    const token = localStorage.getItem('token');
+
+    const response = await axios.get(`${API_URL}/api/camp-management`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+    });
+
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error("Error fetching room allocation data:", error);
+    return [];
+  }
+};
+
+// camp mamagement labors data api
+
+export const fetchlaborsmanagement = async () => {
+  try {
+    const token = localStorage.getItem('token');
+
+    const response = await axios.get(`${API_URL}/api/labor-management`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+    });
+
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error("Error fetching room allocation data:", error);
+    return [];
+  }
+};
+
+export const updateLaborerRoom = async (labId, room) => {
+  try {
+    const response = await fetch(`${API_URL}/api/labors/room/${labId}`, {
+      method: 'PUT',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ room: room }),
+      withCredentials: true,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return null;
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error updating laborer room:", error);
+    throw error;
+  }
+};
+
+
+export const fetchroommanagement = async (room) => {
+  try {
+    if (!room) {
+      console.error("Error: A valid room name is required to fetch data.");
+      return [];
+    }
+
+    const token = localStorage.getItem("token");
+
+    const response = await axios.get(
+      `${API_URL}/api/rooms-management?room=${encodeURIComponent(room)}`,
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }
+    );
+
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error(
+      "Error fetching room allocation data:",
+      error.response?.data || error.message || error
+    );
+    return [];
+  }
+};
+
+
+export const insertRoom = async (roomName, capacity) => {
+  try {
+    const response = await fetch(`${API_URL}/api/room-allocation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ roomName, capacity }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+    throw error;
+  }
+};
+
+
+export const deallocateLaborer = async (labId) => {
+    try {
+        const response = await fetch(`${API_URL}/api/laborer-deallocate/${labId}`, {
+            method: 'PUT',
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('There was a problem with the deallocate operation:', error);
+        throw error;
+    }
+};
+
+
+export const deactivateRoom = async (id) => {
+    try {
+        const response = await fetch(`${API_URL}/api/room-deactivate/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('There was a problem deactivating the room:', error);
+        throw error;
+    }
 };
