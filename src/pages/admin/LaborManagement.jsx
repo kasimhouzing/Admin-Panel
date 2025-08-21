@@ -8,10 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit, Ban, Trash2, Phone, Mail, Clock, Eye, Calendar, User } from "lucide-react";
+import { Plus, Edit, Ban, Trash2, Phone, Mail, Clock, Eye, Calendar, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-//import { Badge } from "@/components/ui/badge";
 //import Image from 'next/image';
 
 // Assuming these functions are correctly implemented elsewhere
@@ -27,6 +25,10 @@ export default function LoginManagement() {
   const [editingUser, setEditingUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage] = useState(10);
+
   const [formData, setFormData] = useState({
     nameOfInductee: "",
     dateOfBirth: "",
@@ -46,6 +48,7 @@ export default function LoginManagement() {
     adharFrontUpload: "",
     additionalDocument1Upload: "",
     additionalDocument2Upload: "",
+    laborerId: "", // Corrected key to match the form field
   });
 
   const designations = [
@@ -64,13 +67,9 @@ export default function LoginManagement() {
   const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   const vendors = ["Lodha Group", "Shapoorji Pallonji", "L&T Construction", "Tata Projects", "Other"];
 
-  const filteredUsers = users.filter((user) =>
-    user.nameOfInductee.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.mobileNumber.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
+    setCurrentPage(1); // Reset to first page on new search
   };
 
   const fetchlabormanagement = async () => {
@@ -79,7 +78,7 @@ export default function LoginManagement() {
       const data = await fetchlabormanagementdata();
       const mapped = data.map((user) => ({
         id: user.lab_id,
-        //lab_id: user.lab_id,
+        laborerId: user.laborer_id, // Ensure this maps from the API response
         nameOfInductee: user.lab_name,
         dateOfBirth: user.date_of_birth,
         email: user.email_id,
@@ -112,12 +111,13 @@ export default function LoginManagement() {
   // This useEffect fetches detailed user info when a user is selected for viewing.
   useEffect(() => {
     const fetchLabourerDetails = async () => {
-      if (viewingUser && viewingUser.lab_id) { // Check if both viewingUser and lab_id exist
+      if (viewingUser && viewingUser.id) { // Check if both viewingUser and lab_id exist
         setLoading(true);
         setError(null);
         try {
-          const details = await getLabourerDetails(viewingUser.lab_id); // Pass lab_id
+          const details = await getLabourerDetails(viewingUser.id); // Pass lab_id
           setLabourer(details);
+          setViewingUser(details); // Update viewing user with full details
         } catch (err) {
           // ... error handling
         } finally {
@@ -129,12 +129,6 @@ export default function LoginManagement() {
     fetchLabourerDetails();
   }, [viewingUser]);
 
-  const handleOpenChange = (isOpen) => {
-    console.log("Viewing user clicked:", user);
-    setViewingUser({ lab_id: user.lab_id });
-  };
-
-
   const inchargeOptions = ["N/A", ...users.map(user => `${user.nameOfInductee} (${user.designation})`)];
 
   const handleFileChange = (e, fieldName) => {
@@ -145,6 +139,7 @@ export default function LoginManagement() {
       setFormData({ ...formData, [fieldName]: "" });
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -167,16 +162,14 @@ export default function LoginManagement() {
       Aadhar_Front_Upload: formData.adharFrontUpload,
       Additional_Document_1: formData.additionalDocument1Upload,
       Additional_Document_2: formData.additionalDocument2Upload,
+      // Corrected key to match the API's expected field
+      Laborer_ID: formData.laborerId
     };
 
     try {
       if (editingUser) {
         await updatelabormanagement(editingUser.id, newLabourerData);
-        setUsers(users.map(user =>
-          user.id === editingUser.id
-            ? { ...user, ...formData }
-            : user
-        ));
+        fetchlabormanagement(); // Re-fetch to get updated data
         toast({
           title: "User Updated",
           description: "User details have been successfully updated.",
@@ -184,7 +177,7 @@ export default function LoginManagement() {
         setEditingUser(null);
       } else {
         const newLabourer = await addlabormanagement(newLabourerData);
-        setUsers([...users, { ...newLabourer, status: "active" }]);
+        fetchlabormanagement(); // Re-fetch to get new data
         toast({
           title: "User Added",
           description: "New user has been successfully added to the system.",
@@ -220,6 +213,7 @@ export default function LoginManagement() {
       setLoading(false);
     }
   };
+
   const handleEdit = (user) => {
     if (!user || typeof user !== 'object') {
       console.error("Invalid user object passed to handleEdit.");
@@ -244,7 +238,8 @@ export default function LoginManagement() {
       adharFrontUpload: user.adharFrontUpload || '',
       adharNumber: user.adharNumber || '',
       mobileNumber: user.mobileNumber || '',
-      email: user.email || ''
+      email: user.email || '',
+      laborerId: user.laborerId || '' // Corrected key here as well
     });
     setIsAddDialogOpen(true);
   };
@@ -257,15 +252,12 @@ export default function LoginManagement() {
     const newStatus = userToUpdate.status === "active" ? "suspended" : "active";
 
     try {
-      // Pass 'userId' to the API function
       await suspendLabormanagement(userId, newStatus);
-
       setUsers(users.map(user =>
         user.id === userId
           ? { ...user, status: newStatus }
           : user
       ));
-
       toast({
         title: "User Status Changed",
         description: `User access has been set to ${newStatus}.`,
@@ -300,22 +292,67 @@ export default function LoginManagement() {
       adharFrontUpload: "",
       additionalDocument1Upload: "",
       additionalDocument2Upload: "",
+      laborerId: "", // Corrected key
     });
   };
 
-
   const handleDelete = async (labId) => {
-    if (window.confirm('Are you sure you want to delete this labourer?')) {
+    try {
       const result = await deleteLabourer(labId);
       if (result.success) {
-        alert(result.message);
-        // You'll need to refresh your data here, for example:
-        // fetchLaborers(); 
+        toast({
+          title: "User Deleted",
+          description: result.message,
+        });
+        fetchlabormanagement();
       } else {
-        alert(result.message);
+        toast({
+          title: "Deletion Failed",
+          description: result.message,
+          variant: "destructive",
+        });
       }
+    } catch (error) {
+      console.error("Failed to delete labourer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete labourer. Please try again.",
+        variant: "destructive",
+      });
     }
   };
+
+  // Pagination Logic
+  const filteredUsers = users.filter((user) =>
+    (user.nameOfInductee || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.mobileNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.laborerId || '').toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredUsers.slice(indexOfFirstRecord, indexOfLastRecord);
+  const nPages = Math.ceil(filteredUsers.length / recordsPerPage);
+
+  const nextPage = () => {
+    if (currentPage < nPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToPage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= nPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  const pageNumbers = [...Array(nPages + 1).keys()].slice(1);
 
   return (
     <div className="space-y-6 p-6 bg-background text-foreground min-h-screen max-w-screen-xl mx-auto">
@@ -351,7 +388,8 @@ export default function LoginManagement() {
                   adharFrontUpload: "",
                   adharNumber: "",
                   mobileNumber: "",
-                  email: ""
+                  email: "",
+                  laborerId: ""
                 });
               }}>
               <Plus className="h-4 w-4 mr-2" />
@@ -368,6 +406,17 @@ export default function LoginManagement() {
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
               <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/90 p-3 rounded-md shadow-sm">Personal Details</div>
               <div className="space-y-2">
+                <Label htmlFor="laborerId">Laborer ID</Label>
+                <Input
+                  id="laborerId"
+                  value={formData.laborerId} // Corrected to use laborerId
+                  onChange={(e) => setFormData({ ...formData, laborerId: e.target.value })}
+                  placeholder="Enter Laborer ID"
+                  required
+                  className="rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="nameOfInductee">Name of Inductee</Label>
                 <Input
                   id="nameOfInductee"
@@ -378,7 +427,6 @@ export default function LoginManagement() {
                   className="rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="dateOfBirth">Date Of Birth</Label>
                 <Input
@@ -402,7 +450,6 @@ export default function LoginManagement() {
                   className="rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="gender">Gender</Label>
                 <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })} required>
@@ -433,7 +480,6 @@ export default function LoginManagement() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/90 p-3 rounded-md shadow-sm mt-6">Contact Details</div>
               <div className="space-y-2">
                 <Label htmlFor="mobileNumber">Mobile Number</Label>
@@ -470,7 +516,6 @@ export default function LoginManagement() {
                 />
               </div>
               <div className="hidden md:block"></div>
-
               <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/90 p-3 rounded-md shadow-sm mt-6">Work Details</div>
               <div className="space-y-2">
                 <Label htmlFor="designation">Designation/Trade</Label>
@@ -518,9 +563,7 @@ export default function LoginManagement() {
                 </Select>
               </div>
               <div className="hidden md:block"></div>
-
               <div className="md:col-span-2 text-lg font-semibold text-primary-foreground bg-primary/90 p-3 rounded-md shadow-sm mt-6">Document Uploads</div>
-
               <div className="space-y-2">
                 <Label htmlFor="photoUpload">Photo Upload</Label>
                 <Input
@@ -565,7 +608,6 @@ export default function LoginManagement() {
                   </p>
                 )}
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="adharFrontUpload">Aadhar Front Upload</Label>
                 <Input
@@ -580,7 +622,6 @@ export default function LoginManagement() {
                   </p>
                 )}
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="additionalDocument1Upload">Additional Document 1</Label>
                 <Input
@@ -595,7 +636,6 @@ export default function LoginManagement() {
                   </p>
                 )}
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="additionalDocument2Upload">Additional Document 2</Label>
                 <Input
@@ -610,7 +650,6 @@ export default function LoginManagement() {
                   </p>
                 )}
               </div>
-
               <div className="flex justify-end space-x-2 pt-6 md:col-span-2">
                 <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)} className="px-5 py-2 rounded-md">
                   Cancel
@@ -623,7 +662,6 @@ export default function LoginManagement() {
           </DialogContent>
         </Dialog>
       </div>
-
       {loading && (
         <div className="text-center p-8">
           <p>Loading data...</p>
@@ -639,7 +677,6 @@ export default function LoginManagement() {
           <p>No users or labourers found.</p>
         </div>
       )}
-
       {!loading && !error && users.length > 0 && (
         <Card className="bg-card border-border shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-border p-4">
@@ -651,7 +688,7 @@ export default function LoginManagement() {
             </div>
             <Input
               type="text"
-              placeholder="Search by name or number..."
+              placeholder="Search by name, ID or number..."
               value={searchTerm}
               onChange={handleSearch}
               className="max-w-xs rounded-md border-input focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
@@ -664,7 +701,7 @@ export default function LoginManagement() {
                   <TableHeader>
                     <TableRow className="bg-muted/50">
                       <TableHead className="font-semibold">Sr</TableHead>
-                      <TableHead className="font-semibold">Name</TableHead>
+                      <TableHead className="font-semibold">Name / ID</TableHead>
                       <TableHead className="font-semibold">Designation</TableHead>
                       <TableHead className="font-semibold">Contact</TableHead>
                       <TableHead className="font-semibold">Gender / Blood Group</TableHead>
@@ -674,11 +711,15 @@ export default function LoginManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUsers.map((user, index) => (
+                    {currentRecords.map((user, index) => (
                       <TableRow key={user.id}>
-                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{indexOfFirstRecord + index + 1}</TableCell>
                         <TableCell>
                           <div>{user.nameOfInductee}</div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            ID: {user.laborerId || "-"}
+                          </div>
                           <div className="text-sm text-muted-foreground flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             {new Date(user.dateOfBirth).toLocaleDateString()}
@@ -714,7 +755,7 @@ export default function LoginManagement() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleViewUser(user.id)} // <-- Use the correct property name (e.g., user.id)
+                            onClick={() => handleViewUser(user.id)}
                           >
                             <Eye className="h-4 w-4 text-blue-600" />
                           </Button>
@@ -728,13 +769,34 @@ export default function LoginManagement() {
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleSuspend(user.id)}
-                            >
-                              <Ban className="h-4 w-4" />
-                            </Button>
+                            {/* Suspend/Activate Alert Dialog */}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="icon" variant="ghost">
+                                  <Ban className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Are you sure you want to {user.status === 'active' ? 'suspend' : 'activate'} this user?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action will change the user's status. They can be restored later.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleSuspend(user.id)}
+                                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                                  >
+                                    Confirm
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            {/* Delete Alert Dialog */}
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button variant="ghost" size="sm">
@@ -767,6 +829,36 @@ export default function LoginManagement() {
                 </Table>
               </div>
             </div>
+            {/* Pagination Controls */}
+            <div className="flex justify-between items-center mt-4">
+              <Button
+                variant="outline"
+                onClick={prevPage}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Previous
+              </Button>
+              <div className="flex space-x-1">
+                {pageNumbers.map(page => (
+                  <Button
+                    key={page}
+                    variant={page === currentPage ? "default" : "outline"}
+                    onClick={() => goToPage(page)}
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                onClick={nextPage}
+                disabled={currentPage === nPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -783,12 +875,13 @@ export default function LoginManagement() {
               <div className="border rounded-lg p-4 bg-muted/50">
                 <h3 className="text-md font-medium mb-4">Personal Information</h3>
                 <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
+                  <div className="flex flex-col"><span className="font-semibold">Laborer ID:</span><span>{viewingUser.laborer_id || "-"}</span></div>
                   <div className="flex flex-col"><span className="font-semibold">Name:</span><span>{viewingUser.lab_name}</span></div>
                   <div className="flex flex-col"><span className="font-semibold">Date of Birth:</span><span>{new Date(viewingUser.date_of_birth).toLocaleDateString()}</span></div>
                   <div className="flex flex-col"><span className="font-semibold">Age:</span><span>{viewingUser.age}</span></div>
                   <div className="flex flex-col"><span className="font-semibold">Gender:</span><span>{viewingUser.gender}</span></div>
                   <div className="flex flex-col"><span className="font-semibold">Blood Group:</span><span>{viewingUser.blood_group}</span></div>
-                  <div className="flex flex-col"><span className="font-semibold">Mobile Number:</span><span>{viewingUser.mobile_number}</span></div>
+                  <div className="flex flex-col col-span-2"><span className="font-semibold">Mobile Number:</span><span>{viewingUser.mobile_number}</span></div>
                   <div className="flex flex-col col-span-2"><span className="font-semibold">Email ID:</span><span>{viewingUser.email_id}</span></div>
                   <div className="flex flex-col col-span-2"><span className="font-semibold">Aadhar Number:</span><span>{viewingUser.aadhar_number}</span></div>
                   <div className="flex flex-col"><span className="font-semibold">Designation:</span><span>{viewingUser.designation_trade}</span></div>
@@ -796,7 +889,6 @@ export default function LoginManagement() {
                   <div className="flex flex-col col-span-2"><span className="font-semibold">Reported to Incharge:</span><span>{viewingUser.reported_to_incharge}</span></div>
                 </div>
               </div>
-
               {/* Document Status Section */}
               <div className="border rounded-lg p-4">
                 <h3 className="text-md font-medium mb-4">Document Status</h3>
@@ -845,7 +937,6 @@ export default function LoginManagement() {
                   </div>
                 </div>
               </div>
-
               {/* Images Section - New Code */}
               <div className="border rounded-lg p-4">
                 <h3 className="text-md font-medium mb-4">Uploaded Documents</h3>
@@ -865,7 +956,6 @@ export default function LoginManagement() {
                       </div>
                     </div>
                   )}
-
                   {/* Conditional rendering for Aadhar Front */}
                   {viewingUser.aadhar_front_upload && viewingUser.aadhar_front_url && (
                     <div className="flex flex-col items-center">
@@ -881,7 +971,6 @@ export default function LoginManagement() {
                       </div>
                     </div>
                   )}
-
                   {/* You can add more image sections here for other documents like Medical Certificate, etc. */}
                   {/* Example for Medical Certificate */}
                   {viewingUser.medical_certificate && viewingUser.medical_certificate_url && (

@@ -12,33 +12,33 @@ import ContractorManagement from "./pages/admin/ContractorManagement";
 import LaborManagement from "./pages/admin/LaborManagement";
 import AttendanceReport from "./pages/admin/AttendanceReport";
 import Login from "./pages/admin/Login";
-import Campmanagement from "./pages/admin/Campmangement";
+import Campmanagement from "./pages/admin/campManagement";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="logins" element={<LoginManagement />} />
-            <Route path="contractors" element={<ContractorManagement />} />
-            <Route path="laborers" element={<LaborManagement />} />
-            <Route path="attendance" element={<AttendanceReport />} />
-            <Route path="Campmanagement" element={<Campmanagement />} />
-          </Route>
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter basename="/Admin-Panel">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="logins" element={<LoginManagement />} />
+            <Route path="contractors" element={<ContractorManagement />} />
+            <Route path="laborers" element={<LaborManagement />} />
+            <Route path="attendance" element={<AttendanceReport />} />
+            <Route path="Campmanagement" element={<Campmanagement />} />
+          </Route>
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
 );
 
 export default App;

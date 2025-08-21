@@ -357,7 +357,7 @@ app.put('/api/contractors/status/:id', async (req, res) => {
 app.get('/api/labormanagement', async (req, res) => {
     try {
         const queryText = `
-      SELECT lab_id, 
+     SELECT lab_id, 
       lab_name, 
 	  date_of_birth, 
 	  age, 
@@ -379,6 +379,7 @@ app.get('/api/labormanagement', async (req, res) => {
 	  created_date, 
 	  updated_date, 
 	  active, 
+	  Laborer_ID,
 	  status
 	FROM ad.labourer_details
     WHERE active = true
@@ -395,7 +396,7 @@ ORDER BY lab_id ASC;
 // add POST route to handle data insertion
 app.post('/insert-labourer', async (req, res) => {
     const {
-        lab_Name, // <-- ADD THIS
+        lab_Name,
         Date_Of_Birth,
         Age,
         Gender,
@@ -412,7 +413,9 @@ app.post('/insert-labourer', async (req, res) => {
         Appointment_Letter_Upload,
         Aadhar_Front_Upload,
         Additional_Document_1,
-        Additional_Document_2
+        Additional_Document_2,
+        // Add the new column name here
+        Laborer_ID
     } = req.body;
 
     const queryText = `
@@ -434,12 +437,13 @@ app.post('/insert-labourer', async (req, res) => {
     Appointment_Letter_Upload,
     Aadhar_Front_Upload,
     Additional_Document_1,
-    Additional_Document_2
-) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+    Additional_Document_2,
+    Laborer_ID
+) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
     RETURNING *;`;
 
     const values = [
-        lab_Name, // <-- ADD THIS
+        lab_Name,
         Date_Of_Birth,
         Age,
         Gender,
@@ -456,7 +460,9 @@ app.post('/insert-labourer', async (req, res) => {
         Appointment_Letter_Upload,
         Aadhar_Front_Upload,
         Additional_Document_1,
-        Additional_Document_2
+        Additional_Document_2,
+        // Add the new value here
+        Laborer_ID
     ];
 
     try {
@@ -781,10 +787,10 @@ app.put('/api/room-deactivate/:id', async (req, res) => {
         const queryText = 'UPDATE ad.Room_Allocation SET active = false, update_date = CURRENT_TIMESTAMP WHERE  id = $1 RETURNING *';
         const result = await client.query(queryText, [id]);
 
-          if (result.rows.length === 0) {
+        if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Room not found.' });
         }
-         res.status(200).json({ message: 'Room deactivated successfully', room: result.rows[0] });
+        res.status(200).json({ message: 'Room deactivated successfully', room: result.rows[0] });
 
         res.status(200).json(result.rows[0]);
     } catch (error) {

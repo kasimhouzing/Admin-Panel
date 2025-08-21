@@ -25,7 +25,7 @@ import { Plus, Edit, Trash2, Users, Building, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchcampmanagement, fetchlaborsmanagement, updateLaborerRoom, fetchroommanagement, insertRoom, deallocateLaborer, deactivateRoom } from "../../../api";
 
-const RoomManagement = () => {
+const campManagement = () => {
     const { toast } = useToast();
 
     // ---------- ROOMS ----------
@@ -727,4 +727,4 @@ const RoomManagement = () => {
     );
 };
 
-export default RoomManagement;
+export default campManagement;
