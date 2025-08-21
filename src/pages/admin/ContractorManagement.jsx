@@ -11,7 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Edit, Ban, Trash2, Phone, Mail, Building, Users, Upload, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-
 // Import the suspendContractor function
 import { fetchContractormanagement, addContractor, updateContractor, deleteContractor, suspendContractor } from "../../../api";
 
@@ -23,6 +22,9 @@ export default function ContractorManagement() {
   const [error, setError] = useState(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingContractor, setEditingContractor] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage] = useState(10);
+
   const [formData, setFormData] = useState({
     name: "",
     companyName: "",
@@ -39,7 +41,6 @@ export default function ContractorManagement() {
     setError(null);
     try {
       const data = await fetchContractormanagement();
-      // Filter out soft-deleted contractors on the client-side
       const activeContractors = data.filter(contractor => contractor.active !== false);
 
       const mappedData = activeContractors.map(contractor => ({
@@ -83,7 +84,6 @@ export default function ContractorManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Map formData to API format
     const apiData = {
       name: formData.name,
       companyName: formData.companyName,
@@ -93,7 +93,7 @@ export default function ContractorManagement() {
       referenceFrom: formData.referenceFrom,
       totalLaborers: parseInt(formData.totalLaborers, 10),
       documents: formData.documents.map(file => file.name),
-      status: formData.status, // Simulating document handling
+      status: formData.status,
     };
 
     try {
@@ -110,7 +110,6 @@ export default function ContractorManagement() {
           description: "New contractor has been successfully added to the system.",
         });
       }
-      // Refresh the list after a successful operation
       fetchContractors();
       setIsAddDialogOpen(false);
     } catch (err) {
@@ -171,11 +170,9 @@ export default function ContractorManagement() {
     }
   };
 
-  // Change the handleDelete function to reflect soft deletion
   const handleDelete = async (contractorId) => {
     try {
       await deleteContractor(contractorId);
-      // After soft deleting, refetch the list to remove the contractor from the view
       fetchContractors();
       toast({
         title: "Contractor Deactivated",
@@ -187,6 +184,36 @@ export default function ContractorManagement() {
         description: "Failed to deactivate contractor. Please try again.",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1); // Reset to first page on new search
+  };
+
+  const filteredContractors = contractors.filter((contractor) =>
+    contractor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contractor.phone.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Pagination logic
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredContractors.slice(indexOfFirstRecord, indexOfLastRecord);
+
+  const nPages = Math.ceil(filteredContractors.length / recordsPerPage);
+  const pageNumbers = [...Array(nPages + 1).keys()].slice(1);
+
+  const goToNextPage = () => {
+    if (currentPage < nPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -205,15 +232,6 @@ export default function ContractorManagement() {
       </div>
     );
   }
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-
-  const filteredContractors = contractors.filter((contractor) =>
-    contractor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contractor.phone.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="space-y-6">
@@ -371,7 +389,6 @@ export default function ContractorManagement() {
         </Dialog>
       </div>
 
-
       <Card className="bg-card border-border shadow-lg">
         <CardHeader className="relative">
           <CardTitle>Manage Labor Contractors</CardTitle>
@@ -400,9 +417,9 @@ export default function ContractorManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredContractors.map((contractor, index) => (
+                {currentRecords.map((contractor, index) => (
                   <TableRow key={contractor.id}>
-                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{indexOfFirstRecord + index + 1}</TableCell>
                     <TableCell>
                       <div>
                         <div className="font-medium">{contractor.name}</div>
@@ -484,6 +501,23 @@ export default function ContractorManagement() {
           </div>
         </CardContent>
       </Card>
+      <div className="flex justify-center items-center space-x-2">
+        <Button onClick={goToPrevPage} disabled={currentPage === 1}>
+          Previous
+        </Button>
+        {pageNumbers.map((number) => (
+          <Button
+            key={number}
+            onClick={() => setCurrentPage(number)}
+            variant={currentPage === number ? "default" : "outline"}
+          >
+            {number}
+          </Button>
+        ))}
+        <Button onClick={goToNextPage} disabled={currentPage === nPages}>
+          Next
+        </Button>
+      </div>
     </div>
   );
 }
