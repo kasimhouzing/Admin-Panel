@@ -12,7 +12,7 @@ import { Plus, Edit, Ban, Trash2, Phone, Mail, Clock, Eye, Calendar, User } from
 import { useToast } from "@/hooks/use-toast";
 
 //import { Badge } from "@/components/ui/badge";
-import Image from 'next/image';
+//import Image from 'next/image';
 
 // Assuming these functions are correctly implemented elsewhere
 import { fetchlabormanagementdata, addlabormanagement, updatelabormanagement, suspendLabormanagement, getLabourerDetails, deleteLabourer } from "../../../api";
